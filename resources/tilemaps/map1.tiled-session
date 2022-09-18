@@ -1,0 +1,47 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "map1.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "": {
+            "scaleInEditor": 5.5
+        },
+        "map1.tmx": {
+            "scale": 3,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 91.83333333333331,
+                "y": 66.66666666666666
+            }
+        },
+        "map1.tmx#tileset1": {
+            "scaleInDock": 4
+        }
+    },
+    "last.exportedFilePath": "C:/Dev/R6E/assets/tilemaps",
+    "last.imagePath": "C:/Dev/R6E/assets/tilesets",
+    "map.fixedSize": false,
+    "map.lastUsedExportFilter": "JSON-Kartendateien (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 8,
+    "map.tileWidth": 8,
+    "openFiles": [
+        "map1.tmx"
+    ],
+    "project": "map1.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "map1.tmx"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.tileSize": {
+        "height": 8,
+        "width": 8
+    },
+    "tileset.useTransparentColor": true
+}

@@ -1,0 +1,38 @@
+import Phaser from 'phaser';
+
+var config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    backgroundColor: '#2d2d2d',
+    parent: 'phaser-example',
+    pixelArt: true,
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
+var game = new Phaser.Game(config);
+
+function preload ()
+{
+    this.load.tilemapCSV('map1_floor', 'src/assets/tilemaps/map1_floor.csv');
+    this.load.tilemapCSV('map1_walls', 'src/assets/tilemaps/map1_walls.csv');
+    this.load.image('tiles', 'src/assets/tilesets/tileset01.png');
+}
+
+function create ()
+{
+    var map1_floor = this.make.tilemap({ key: 'map1_floor', tileWidth: 8, tileHeight: 8 });
+    var map1_walls = this.make.tilemap({ key: 'map1_walls', tileWidth: 8, tileHeight: 8 });
+    var tileset_floor = map1_floor.addTilesetImage('tiles');
+    var tileset_walls = map1_walls.addTilesetImage('tiles');
+    var layer_floor = map1_floor.createLayer(0, tileset_floor, 0, 0); // layer index, tileset, x, y 
+    var layer_walls = map1_walls.createLayer(0, tileset_floor, 0, 0); // layer index, tileset, x, y 
+}
+
+function update()
+{
+}
