@@ -24,3 +24,11 @@ $ npm run build
 # Play your production ready game in the browser
 $ npm run serve
 ```
+
+## Credits
+
+Phaser 3 TypeScript Starter Template
+https://github.com/yandeu/phaser-project-template
+
+Dungeon Crawler Starter
+https://github.com/ourcade/phaser3-dungeon-crawler-starte

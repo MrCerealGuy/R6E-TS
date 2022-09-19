@@ -8,7 +8,21 @@
         "h": 8
       },
       "rotated": false,
-      "trimmed": true
+      "trimmed": true,
+	  "spriteSourceSize": {
+        "x": 1,
+        "y": 6,
+        "w": 15,
+        "h": 19
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 28
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
     },
     "grunt_m_idle_anim_f0.png": {
       "frame": {
@@ -18,7 +32,21 @@
         "h": 8
       },
       "rotated": false,
-      "trimmed": true
+      "trimmed": true,
+	  "spriteSourceSize": {
+        "x": 1,
+        "y": 6,
+        "w": 15,
+        "h": 19
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 28
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
     },
     "grunt_m_run_anim_f0.png": {
       "frame": {
@@ -28,7 +56,21 @@
         "h": 8
       },
       "rotated": false,
-      "trimmed": true
+      "trimmed": true,
+	  "spriteSourceSize": {
+        "x": 1,
+        "y": 6,
+        "w": 15,
+        "h": 19
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 28
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
     },
     "grunt_m_run_anim_f1.png": {
       "frame": {
@@ -39,6 +81,20 @@
       },
       "rotated": false,
       "trimmed": true,
+	  "spriteSourceSize": {
+        "x": 1,
+        "y": 6,
+        "w": 15,
+        "h": 19
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 28
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
     }
   },
   "meta": {

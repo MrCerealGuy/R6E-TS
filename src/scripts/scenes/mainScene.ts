@@ -44,21 +44,22 @@ export default class MainScene extends Phaser.Scene {
       .setOrigin(1, 0)
 
     this.scene.run('game-ui')
-
+    
     createCharacterAnims(this.anims)
     createGruntAnims(this.anims)
     createChestAnims(this.anims)
 
-    const map = this.make.tilemap({ key: 'dungeon' })
-		const tileset = map.addTilesetImage('dungeon', 'tiles', 8, 8, 1, 2)
-
+    const map = this.make.tilemap({ key: 'tileset1' })
+		//const tileset = map.addTilesetImage('dungeon', 'tiles', 8, 8, 1, 2)
+    const tileset = map.addTilesetImage('tileset1', 'tiles', 8, 8)
+    
 		map.createLayer('Ground', tileset)
 
     this.knives = this.physics.add.group({
 			classType: Phaser.Physics.Arcade.Image,
 			maxSize: 3
 		})
-
+    
 		this.faune = this.add.faune(128, 128, 'faune')
 		this.faune.setKnives(this.knives)
 
@@ -69,11 +70,11 @@ export default class MainScene extends Phaser.Scene {
     const chests = this.physics.add.staticGroup({
 			classType: Chest
 		})
-		const chestsLayer = map.getObjectLayer('Chests')
+		/*const chestsLayer = map.getObjectLayer('Chests')
 		chestsLayer.objects.forEach(chestObj => {
 			chests.get(chestObj.x! + chestObj.width! * 0.5, chestObj.y! - chestObj.height! * 0.5, 'treasure')
-		})
-
+		})*/
+    
 		this.cameras.main.startFollow(this.faune, true)
 
 		this.grunts = this.physics.add.group({
@@ -83,12 +84,13 @@ export default class MainScene extends Phaser.Scene {
 				lizGo.body.onCollide = true
 			}
 		})
-
+    
 		const gruntsLayer = map.getObjectLayer('Grunts')
+
 		gruntsLayer.objects.forEach(lizObj => {
 			this.grunts.get(lizObj.x! + lizObj.width! * 0.5, lizObj.y! - lizObj.height! * 0.5, 'grunt')
 		})
-
+    
 		this.physics.add.collider(this.faune, wallsLayer)
 		this.physics.add.collider(this.grunts, wallsLayer)
 

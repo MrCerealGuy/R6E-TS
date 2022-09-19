@@ -94,7 +94,7 @@
          "name":"Grunts",
          "objects":[
                 {
-                 "class":"",
+                 "type":"",
                  "gid":77,
                  "height":8,
                  "id":1,
@@ -106,7 +106,7 @@
                  "y":66.7444
                 }, 
                 {
-                 "class":"",
+                 "type":"",
                  "gid":77,
                  "height":8,
                  "id":4,
@@ -118,7 +118,7 @@
                  "y":199.744
                 }, 
                 {
-                 "class":"",
+                 "type":"",
                  "gid":77,
                  "height":8,
                  "id":3,
@@ -130,7 +130,7 @@
                  "y":144.744
                 }, 
                 {
-                 "class":"grunt",
+                 "type":"grunt",
                  "gid":77,
                  "height":8,
                  "id":2,
