@@ -14,14 +14,14 @@
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 32,
-						"h": 32
+						"w": 8,
+						"h": 8
 					},
 					"spriteSourceSize": {
-						"x": 7,
-						"y": 6,
-						"w": 17,
-						"h": 22
+						"x": 0,
+						"y": 0,
+						"w": 8,
+						"h": 8
 					},
 					"frame": {
 						"x": 0,
@@ -35,17 +35,38 @@
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 32,
-						"h": 32
+						"w": 8,
+						"h": 8
 					},
 					"spriteSourceSize": {
-						"x": 7,
-						"y": 8,
-						"w": 18,
-						"h": 22
+						"x": 0,
+						"y": 0,
+						"w": 8,
+						"h": 8
 					},
 					"frame": {
 						"x": 0,
+						"y": 0,
+						"w": 8,
+						"h": 8
+					}
+				},
+				{
+					"filename": "run-down-2.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 8,
+						"h": 8
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 8,
+						"h": 8
+					},
+					"frame": {
+						"x": 8,
 						"y": 0,
 						"w": 8,
 						"h": 8
@@ -56,14 +77,14 @@
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 32,
-						"h": 32
+						"w": 8,
+						"h": 8
 					},
 					"spriteSourceSize": {
-						"x": 8,
-						"y": 6,
-						"w": 16,
-						"h": 22
+						"x": 0,
+						"y": 0,
+						"w": 8,
+						"h": 8
 					},
 					"frame": {
 						"x": 0,
@@ -77,14 +98,14 @@
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 32,
-						"h": 32
+						"w": 8,
+						"h": 8
 					},
 					"spriteSourceSize": {
-						"x": 6,
-						"y": 5,
-						"w": 18,
-						"h": 22
+						"x": 0,
+						"y": 0,
+						"w": 8,
+						"h": 8
 					},
 					"frame": {
 						"x": 0,
@@ -98,38 +119,17 @@
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 32,
-						"h": 32
+						"w": 8,
+						"h": 8
 					},
 					"spriteSourceSize": {
-						"x": 6,
-						"y": 6,
-						"w": 18,
-						"h": 22
-					},
-					"frame": {
-						"x": 8,
+						"x": 0,
 						"y": 0,
 						"w": 8,
 						"h": 8
-					}
-				},
-				{
-					"filename": "run-down-2.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 32,
-						"h": 32
-					},
-					"spriteSourceSize": {
-						"x": 8,
-						"y": 9,
-						"w": 16,
-						"h": 21
 					},
 					"frame": {
-						"x": 0,
+						"x": 8,
 						"y": 0,
 						"w": 8,
 						"h": 8
@@ -140,17 +140,17 @@
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 32,
-						"h": 32
+						"w": 8,
+						"h": 8
 					},
 					"spriteSourceSize": {
-						"x": 7,
-						"y": 7,
-						"w": 17,
-						"h": 21
+						"x": 0,
+						"y": 0,
+						"w": 8,
+						"h": 8
 					},
 					"frame": {
-						"x": 0,
+						"x": 32,
 						"y": 0,
 						"w": 8,
 						"h": 8
@@ -161,14 +161,14 @@
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 32,
-						"h": 32
+						"w": 8,
+						"h": 8
 					},
 					"spriteSourceSize": {
-						"x": 6,
-						"y": 8,
-						"w": 19,
-						"h": 21
+						"x": 0,
+						"y": 0,
+						"w": 8,
+						"h": 8
 					},
 					"frame": {
 						"x": 0,
@@ -182,17 +182,17 @@
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 32,
-						"h": 32
+						"w": 8,
+						"h": 8
 					},
 					"spriteSourceSize": {
-						"x": 7,
-						"y": 9,
-						"w": 17,
-						"h": 21
+						"x": 0,
+						"y": 0,
+						"w": 8,
+						"h": 8
 					},
 					"frame": {
-						"x": 0,
+						"x": 8,
 						"y": 0,
 						"w": 8,
 						"h": 8
@@ -203,14 +203,14 @@
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 32,
-						"h": 32
+						"w": 8,
+						"h": 8
 					},
 					"spriteSourceSize": {
-						"x": 8,
-						"y": 6,
-						"w": 16,
-						"h": 21
+						"x": 0,
+						"y": 0,
+						"w": 8,
+						"h": 8
 					},
 					"frame": {
 						"x": 0,

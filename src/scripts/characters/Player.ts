@@ -207,16 +207,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 			this.anims.play('player-run-side', true)
 			this.setVelocity(-speed, 0)
 
-			//this.scaleX = -1
-			//this.body.offset.x = 24
+			this.scaleX = -1
+			this.body.offset.x = 8
 		}
 		else if (rightDown)
 		{
 			this.anims.play('player-run-side', true)
 			this.setVelocity(speed, 0)
 
-			//this.scaleX = 1
-			//this.body.offset.x = 8
+			this.scaleX = 1
+			this.body.offset.x = 0
 		}
 		else if (upDown)
 		{
@@ -252,7 +252,7 @@ Phaser.GameObjects.GameObjectFactory.register('player', function (this: Phaser.G
 	this.scene.physics.world.enableBody(sprite, Phaser.Physics.Arcade.DYNAMIC_BODY)
 
 	//sprite.body.setSize(sprite.width * 0.5, sprite.height * 0.8)
-	sprite.body.setSize(sprite.width, sprite.height)
+	sprite.body.setSize(sprite.width*SCALE, sprite.height*SCALE)
 
 	return sprite
 })

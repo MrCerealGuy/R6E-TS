@@ -59,6 +59,8 @@ export default class MainScene extends Phaser.Scene {
     const groundLayer = map.createLayer('Ground', tileset)
     groundLayer.setScale(SCALE)
 
+    groundLayer.setCollisionByProperty({ collides: true })
+
     this.knives = this.physics.add.group({
 			classType: Phaser.Physics.Arcade.Image,
 			maxSize: 3
@@ -93,9 +95,12 @@ export default class MainScene extends Phaser.Scene {
 		const gruntsLayer = map.getObjectLayer('Grunts')
 
 		gruntsLayer.objects.forEach(lizObj => {
-			//this.grunts.get(lizObj.x! + lizObj.width! * 0.5, lizObj.y! - lizObj.height! * 0.5, 'grunt')
+			this.grunts.get(lizObj.x! + lizObj.width! * 0.5, lizObj.y! - lizObj.height! * 0.5, 'grunt')
 		})
     
+    this.physics.add.collider(this.player, groundLayer)
+		this.physics.add.collider(this.grunts, groundLayer)
+
 		this.physics.add.collider(this.player, wallsLayer)
 		this.physics.add.collider(this.grunts, wallsLayer)
 

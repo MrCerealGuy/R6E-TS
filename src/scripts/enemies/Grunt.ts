@@ -65,7 +65,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite
 	{
 		super.preUpdate(t, dt)
 
-		const speed = 50
+		const speed = 15
 
 		switch (this.direction)
 		{
