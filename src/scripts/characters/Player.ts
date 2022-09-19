@@ -3,6 +3,8 @@ import Chest from '../items/Chest'
 
 import { sceneEvents } from '../events/EventsCenter'
 
+import {SCALE} from '../utils/globals'
+
 declare global
 {
 	namespace Phaser.GameObjects
@@ -39,9 +41,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 
 	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number)
 	{
-		super(scene, x, y, texture, frame)
+		super(scene, x*SCALE, y*SCALE, texture, frame)
 
 		this.anims.play('player-idle-down')
+
+		this.setScale(SCALE)
 	}
 
 	setKnives(knives: Phaser.Physics.Arcade.Group)
@@ -191,7 +195,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 			return
 		}
 
-		const speed = 100
+		const speed = 50
 
 		const leftDown = cursors.left?.isDown
 		const rightDown = cursors.right?.isDown
@@ -203,16 +207,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 			this.anims.play('player-run-side', true)
 			this.setVelocity(-speed, 0)
 
-			this.scaleX = -1
-			this.body.offset.x = 24
+			//this.scaleX = -1
+			//this.body.offset.x = 24
 		}
 		else if (rightDown)
 		{
 			this.anims.play('player-run-side', true)
 			this.setVelocity(speed, 0)
 
-			this.scaleX = 1
-			this.body.offset.x = 8
+			//this.scaleX = 1
+			//this.body.offset.x = 8
 		}
 		else if (upDown)
 		{
@@ -247,7 +251,8 @@ Phaser.GameObjects.GameObjectFactory.register('player', function (this: Phaser.G
 
 	this.scene.physics.world.enableBody(sprite, Phaser.Physics.Arcade.DYNAMIC_BODY)
 
-	sprite.body.setSize(sprite.width * 0.5, sprite.height * 0.8)
+	//sprite.body.setSize(sprite.width * 0.5, sprite.height * 0.8)
+	sprite.body.setSize(sprite.width, sprite.height)
 
 	return sprite
 })

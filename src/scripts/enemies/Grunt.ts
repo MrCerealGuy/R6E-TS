@@ -1,5 +1,7 @@
 import Phaser from 'phaser'
 
+import {SCALE} from '../utils/globals'
+
 enum Direction
 {
 	UP,
@@ -25,7 +27,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite
 
 	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number)
 	{
-		super(scene, x, y, texture, frame)
+		super(scene, x*SCALE, y*SCALE, texture, frame)
 
 		this.anims.play('grunt-idle')
 
@@ -38,6 +40,8 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite
 			},
 			loop: true
 		})
+
+		this.setScale(SCALE)
 	}
 
 	destroy(fromScene?: boolean)

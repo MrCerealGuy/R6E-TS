@@ -14,7 +14,7 @@ import { sceneEvents } from '../events/EventsCenter'
 import Chest from '../items/Chest'
 import { Game } from 'phaser'
 
-const SCALE=4
+import {SCALE} from '../utils/globals'
 
 export default class MainScene extends Phaser.Scene {
   private fpsText
@@ -57,18 +57,18 @@ export default class MainScene extends Phaser.Scene {
     const tileset = map.addTilesetImage('tileset1', 'tiles', 8, 8)
     
     const groundLayer = map.createLayer('Ground', tileset)
-    //groundLayer.setScale(SCALE)
+    groundLayer.setScale(SCALE)
 
     this.knives = this.physics.add.group({
 			classType: Phaser.Physics.Arcade.Image,
 			maxSize: 3
 		})
     
-		this.player = this.add.player(64, 32, 'player')
+		this.player = this.add.player(64*SCALE, 32*SCALE, 'player')
 		this.player.setKnives(this.knives)
 
 		const wallsLayer = map.createLayer('Walls', tileset)
-    //wallsLayer.setScale(SCALE)
+    wallsLayer.setScale(SCALE)
 
 		wallsLayer.setCollisionByProperty({ collides: true })
 
@@ -93,7 +93,7 @@ export default class MainScene extends Phaser.Scene {
 		const gruntsLayer = map.getObjectLayer('Grunts')
 
 		gruntsLayer.objects.forEach(lizObj => {
-			this.grunts.get(lizObj.x! + lizObj.width! * 0.5, lizObj.y! - lizObj.height! * 0.5, 'grunt')
+			//this.grunts.get(lizObj.x! + lizObj.width! * 0.5, lizObj.y! - lizObj.height! * 0.5, 'grunt')
 		})
     
 		this.physics.add.collider(this.player, wallsLayer)
