@@ -9,7 +9,7 @@ declare global
 	{
 		interface GameObjectFactory
 		{
-			faune(x: number, y: number, texture: string, frame?: string | number): Faune
+			player(x: number, y: number, texture: string, frame?: string | number): Player
 		}
 	}
 }
@@ -21,7 +21,7 @@ enum HealthState
 	DEAD
 }
 
-export default class Faune extends Phaser.Physics.Arcade.Sprite
+export default class Player extends Phaser.Physics.Arcade.Sprite
 {
 	private healthState = HealthState.IDLE
 	private damageTime = 0
@@ -41,7 +41,7 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite
 	{
 		super(scene, x, y, texture, frame)
 
-		this.anims.play('faune-idle-down')
+		this.anims.play('player-idle-down')
 	}
 
 	setKnives(knives: Phaser.Physics.Arcade.Group)
@@ -72,7 +72,7 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite
 		{
 			// TODO: die
 			this.healthState = HealthState.DEAD
-			this.anims.play('faune-faint')
+			this.anims.play('player-faint')
 			this.setVelocity(0, 0)
 		}
 		else
@@ -200,7 +200,7 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite
 
 		if (leftDown)
 		{
-			this.anims.play('faune-run-side', true)
+			this.anims.play('player-run-side', true)
 			this.setVelocity(-speed, 0)
 
 			this.scaleX = -1
@@ -208,7 +208,7 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite
 		}
 		else if (rightDown)
 		{
-			this.anims.play('faune-run-side', true)
+			this.anims.play('player-run-side', true)
 			this.setVelocity(speed, 0)
 
 			this.scaleX = 1
@@ -216,12 +216,12 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite
 		}
 		else if (upDown)
 		{
-			this.anims.play('faune-run-up', true)
+			this.anims.play('player-run-up', true)
 			this.setVelocity(0, -speed)
 		}
 		else if (downDown)
 		{
-			this.anims.play('faune-run-down', true)
+			this.anims.play('player-run-down', true)
 			this.setVelocity(0, speed)
 		}
 		else
@@ -239,8 +239,8 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite
 	}
 }
 
-Phaser.GameObjects.GameObjectFactory.register('faune', function (this: Phaser.GameObjects.GameObjectFactory, x: number, y: number, texture: string, frame?: string | number) {
-	var sprite = new Faune(this.scene, x, y, texture, frame)
+Phaser.GameObjects.GameObjectFactory.register('player', function (this: Phaser.GameObjects.GameObjectFactory, x: number, y: number, texture: string, frame?: string | number) {
+	var sprite = new Player(this.scene, x, y, texture, frame)
 
 	this.displayList.add(sprite)
 	this.updateList.add(sprite)

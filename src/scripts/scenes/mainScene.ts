@@ -7,17 +7,20 @@ import { createChestAnims } from '../anims/TreasureAnims'
 
 import Grunt from '../enemies/Grunt'
 
-import '../characters/Faune'
-import Faune from '../characters/Faune'
+import '../characters/Player'
+import Player from '../characters/Player'
 
 import { sceneEvents } from '../events/EventsCenter'
 import Chest from '../items/Chest'
+import { Game } from 'phaser'
+
+const SCALE=4
 
 export default class MainScene extends Phaser.Scene {
   private fpsText
 
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
-	private faune!: Faune
+	private player!: Player
 
 	private knives!: Phaser.Physics.Arcade.Group
 	private grunts!: Phaser.Physics.Arcade.Group
@@ -53,17 +56,19 @@ export default class MainScene extends Phaser.Scene {
 		//const tileset = map.addTilesetImage('dungeon', 'tiles', 8, 8, 1, 2)
     const tileset = map.addTilesetImage('tileset1', 'tiles', 8, 8)
     
-		map.createLayer('Ground', tileset)
+    const groundLayer = map.createLayer('Ground', tileset)
+    //groundLayer.setScale(SCALE)
 
     this.knives = this.physics.add.group({
 			classType: Phaser.Physics.Arcade.Image,
 			maxSize: 3
 		})
     
-		this.faune = this.add.faune(128, 128, 'faune')
-		this.faune.setKnives(this.knives)
+		this.player = this.add.player(64, 32, 'player')
+		this.player.setKnives(this.knives)
 
 		const wallsLayer = map.createLayer('Walls', tileset)
+    //wallsLayer.setScale(SCALE)
 
 		wallsLayer.setCollisionByProperty({ collides: true })
 
@@ -75,7 +80,7 @@ export default class MainScene extends Phaser.Scene {
 			chests.get(chestObj.x! + chestObj.width! * 0.5, chestObj.y! - chestObj.height! * 0.5, 'treasure')
 		})*/
     
-		this.cameras.main.startFollow(this.faune, true)
+		this.cameras.main.startFollow(this.player, true)
 
 		this.grunts = this.physics.add.group({
 			classType: Grunt,
@@ -91,21 +96,21 @@ export default class MainScene extends Phaser.Scene {
 			this.grunts.get(lizObj.x! + lizObj.width! * 0.5, lizObj.y! - lizObj.height! * 0.5, 'grunt')
 		})
     
-		this.physics.add.collider(this.faune, wallsLayer)
+		this.physics.add.collider(this.player, wallsLayer)
 		this.physics.add.collider(this.grunts, wallsLayer)
 
-		this.physics.add.collider(this.faune, chests, this.handlePlayerChestCollision, undefined, this)
+		this.physics.add.collider(this.player, chests, this.handlePlayerChestCollision, undefined, this)
 
 		this.physics.add.collider(this.knives, wallsLayer, this.handleKnifeWallCollision, undefined, this)
 		this.physics.add.collider(this.knives, this.grunts, this.handleKnifeGruntCollision, undefined, this)
 
-		this.playerGruntsCollider = this.physics.add.collider(this.grunts, this.faune, this.handlePlayerGruntCollision, undefined, this)
+		this.playerGruntsCollider = this.physics.add.collider(this.grunts, this.player, this.handlePlayerGruntCollision, undefined, this)
   }
 
   private handlePlayerChestCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject)
 	{
 		const chest = obj2 as Chest
-		this.faune.setChest(chest)
+		this.player.setChest(chest)
 	}
 
 	private handleKnifeWallCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject)
@@ -123,16 +128,16 @@ export default class MainScene extends Phaser.Scene {
 	{
 		const grunt = obj2 as Grunt
 		
-		const dx = this.faune.x - grunt.x
-		const dy = this.faune.y - grunt.y
+		const dx = this.player.x - grunt.x
+		const dy = this.player.y - grunt.y
 
 		const dir = new Phaser.Math.Vector2(dx, dy).normalize().scale(200)
 
-		this.faune.handleDamage(dir)
+		this.player.handleDamage(dir)
 
-		sceneEvents.emit('player-health-changed', this.faune.health)
+		sceneEvents.emit('player-health-changed', this.player.health)
 
-		if (this.faune.health <= 0)
+		if (this.player.health <= 0)
 		{
 			this.playerGruntsCollider?.destroy()
 		}
@@ -141,9 +146,9 @@ export default class MainScene extends Phaser.Scene {
   update(t: number, dt: number) {
     this.fpsText.update()
 
-    if (this.faune)
+    if (this.player)
 		{
-			this.faune.update(this.cursors)
+			this.player.update(this.cursors)
 		}
   }
 }
