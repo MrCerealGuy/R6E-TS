@@ -14,6 +14,13 @@ const createGruntAnims = (anims: Phaser.Animations.AnimationManager) => {
 		repeat: -1,
 		frameRate: 10
 	})
+
+	anims.create({
+		key: 'grunt-faint',
+		frames: anims.generateFrameNames('grunt', { start: 0, end: 0, prefix: 'grunt_m_faint_anim_f', suffix: '.png' }),
+		repeat: -1,
+		frameRate: 10
+	})
 }
 
 export {

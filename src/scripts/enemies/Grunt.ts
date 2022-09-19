@@ -48,6 +48,9 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite
 	{
 		this.moveEvent.destroy()
 
+		//this.anims.play('grunt-faint')
+		//this.setVelocity(0, 0)
+
 		super.destroy(fromScene)
 	}
 

@@ -47,7 +47,7 @@ export default class MainScene extends Phaser.Scene {
       .setOrigin(1, 0)
 
     this.scene.run('game-ui')
-    
+  
     createCharacterAnims(this.anims)
     createGruntAnims(this.anims)
     createChestAnims(this.anims)
@@ -125,8 +125,8 @@ export default class MainScene extends Phaser.Scene {
 
 	private handleKnifeGruntCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject)
 	{
-		this.knives.killAndHide(obj1)
-		this.grunts.killAndHide(obj2)
+		this.knives.killAndHide(obj1) // knives
+		this.grunts.killAndHide(obj2) // grunts
 	}
 
 	private handlePlayerGruntCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject)
@@ -150,10 +150,11 @@ export default class MainScene extends Phaser.Scene {
 
   update(t: number, dt: number) {
     this.fpsText.update()
+    var pads = this.input.gamepad.gamepads
 
     if (this.player)
 		{
-			this.player.update(this.cursors)
+			this.player.update(this.cursors, pads)
 		}
   }
 }

@@ -165,7 +165,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 		}
 	}
 
-	update(cursors: Phaser.Types.Input.Keyboard.CursorKeys)
+	update(cursors: Phaser.Types.Input.Keyboard.CursorKeys, pads: Phaser.Input.Gamepad.Gamepad[])
 	{
 		if (this.healthState === HealthState.DAMAGE
 			|| this.healthState === HealthState.DEAD
@@ -179,7 +179,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 			return
 		}
 
-		if (Phaser.Input.Keyboard.JustDown(cursors.space!))
+		if (!pads)
+		{
+			return
+		}
+
+		if (Phaser.Input.Keyboard.JustDown(cursors.space!) || (pads[0] != null && pads[0].buttons[2].value==1))
 		{
 			if (this.activeChest)
 			{
@@ -202,7 +207,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 		const upDown = cursors.up?.isDown
 		const downDown = cursors.down?.isDown
 
-		if (leftDown)
+		if (leftDown || (pads[0] != null && pads[0].buttons[14].value==1))
 		{
 			this.anims.play('player-run-side', true)
 			this.setVelocity(-speed, 0)
@@ -210,7 +215,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 			this.scaleX = -1
 			this.body.offset.x = 8
 		}
-		else if (rightDown)
+		else if (rightDown || (pads[0] != null && pads[0].buttons[15].value==1))
 		{
 			this.anims.play('player-run-side', true)
 			this.setVelocity(speed, 0)
@@ -218,12 +223,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 			this.scaleX = 1
 			this.body.offset.x = 0
 		}
-		else if (upDown)
+		else if (upDown || (pads[0] != null && pads[0].buttons[12].value==1))
 		{
 			this.anims.play('player-run-up', true)
 			this.setVelocity(0, -speed)
 		}
-		else if (downDown)
+		else if (downDown || (pads[0] != null && pads[0].buttons[13].value==1))
 		{
 			this.anims.play('player-run-down', true)
 			this.setVelocity(0, speed)
