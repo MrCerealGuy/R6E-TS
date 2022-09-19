@@ -4,6 +4,17 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.image('tiles', 'assets/tiles/tileset01.png')
+		this.load.tilemapTiledJSON('dungeon', 'assets/tiles/map1.json')
+
+		this.load.atlas('faune', 'assets/character/fauna.png', 'assets/character/fauna.json')
+		this.load.atlas('grunt', 'assets/enemies/grunt.png', 'assets/enemies/grunt.json')
+		this.load.atlas('treasure', 'assets/items/treasure.png', 'assets/items/treasure.json')
+
+		this.load.image('ui-heart-empty', 'assets/ui/ui_heart_empty.png')
+		this.load.image('ui-heart-full', 'assets/ui/ui_heart_full.png')
+
+		this.load.image('knife', 'assets/weapons/weapon_knife.png')
   }
 
   create() {

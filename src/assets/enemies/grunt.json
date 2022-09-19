@@ -1,0 +1,55 @@
+{
+  "frames": {
+    "grunt_m_hit_anim_f0.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": true
+    },
+    "grunt_m_idle_anim_f0.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": true
+    },
+    "grunt_m_run_anim_f0.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": true
+    },
+    "grunt_m_run_anim_f1.png": {
+      "frame": {
+        "x": 8,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": true,
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.5",
+    "image": "grunt.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 32,
+      "h": 8
+    },
+    "scale": 1
+  }
+}
