@@ -26,6 +26,9 @@ const config = {
       debug: false,
       gravity: { y: 0 }
     }
+  },
+  audio: {
+    disableWebAudio: true
   }
 }
 

@@ -33,6 +33,27 @@ export default class MainScene extends Phaser.Scene {
 
   preload() {
 		this.cursors = this.input.keyboard.createCursorKeys()
+
+		// load sfx
+		this.load.audio('player-death-sound', [
+			'assets/character/death.mp3'
+		]);
+
+		this.load.audio('player-hurt-sound', [
+			'assets/character/hurt.mp3'
+		]);
+
+		this.load.audio('knife-throw-sound', [
+			'assets/weapons/knife-throw.mp3'
+		]);
+
+		this.load.audio('grunt-death-sound', [
+			'assets/enemies/death.mp3'
+		]);
+
+		this.load.audio('grunt-hurt-sound', [
+			'assets/enemies/hurt.mp3'
+		]);
   }
 
   create() {
@@ -125,6 +146,9 @@ export default class MainScene extends Phaser.Scene {
 
 	private handleKnifeGruntCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject)
 	{
+		const grunt = obj2 as Grunt
+		grunt.handleDeath()
+
 		this.knives.killAndHide(obj1) // knives
 		this.grunts.killAndHide(obj2) // grunts
 	}

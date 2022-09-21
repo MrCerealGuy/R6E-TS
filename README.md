@@ -32,3 +32,12 @@ https://github.com/yandeu/phaser-project-template
 
 Dungeon Crawler Starter
 https://github.com/ourcade/phaser3-dungeon-crawler-starte
+
+### Tile sets
+
+Scut Pixel Tileset - 8x8 Roguelike
+https://scut.itch.io/7drl-tileset-2018
+
+### Sfx effects
+
+https://pixabay.com/sound-effects/
