@@ -25,8 +25,10 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite
 	private direction = Direction.RIGHT
 	private moveEvent: Phaser.Time.TimerEvent
 
-	private death_sound
-	private hurt_sound
+	private death_sound!: Phaser.Sound.BaseSound
+	private hurt_sound!: Phaser.Sound.BaseSound
+
+	public dead: boolean = false
 
 	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number)
 	{
@@ -46,8 +48,8 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite
 
 		this.setScale(SCALE)
 
-		this.death_sound = scene.sound.add('grunt-death-sound')
-		this.hurt_sound = scene.sound.add('grunt-hurt-sound')
+		this.death_sound = scene.sound.add('grunt-death-sound', {volume: 0.2})
+		this.hurt_sound = scene.sound.add('grunt-hurt-sound', {volume: 0.2})
 	}
 
 	handleDamage()
@@ -58,21 +60,18 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite
 
 	handleDeath()
 	{
+		this.dead = true
 		this.moveEvent.destroy()
 
 		this.death_sound.play()
+		this.anims.play('grunt-faint')
 
-		//this.anims.play('grunt-faint')
 		this.setVelocity(0, 0)
 	}
 
 	destroy(fromScene?: boolean)
 	{
 		this.moveEvent.destroy()
-
-		//this.anims.play('grunt-faint')
-		//this.setVelocity(0, 0)
-
 		super.destroy(fromScene)
 	}
 
@@ -89,6 +88,9 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite
 	preUpdate(t: number, dt: number)
 	{
 		super.preUpdate(t, dt)
+
+		if (this.dead)
+			return
 
 		const speed = 15
 

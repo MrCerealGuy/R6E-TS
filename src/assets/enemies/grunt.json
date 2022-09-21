@@ -96,9 +96,9 @@
         "y": 0.5
       }
     },
-	"grunt_m_idle_faint_f0.png": {
+	"grunt_m_faint_anim_f0.png": {
       "frame": {
-        "x": 0,
+        "x": 32,
         "y": 0,
         "w": 8,
         "h": 8
@@ -106,7 +106,7 @@
       "rotated": false,
       "trimmed": true,
 	  "spriteSourceSize": {
-        "x": 32,
+        "x": 0,
         "y": 0,
         "w": 8,
         "h": 8

@@ -34,9 +34,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 	private knives?: Phaser.Physics.Arcade.Group
 	private activeChest?: Chest
 
-	private death_sound
-	private hurt_sound
-	private knife_throw_sound
+	private death_sound!: Phaser.Sound.BaseSound
+	private hurt_sound!: Phaser.Sound.BaseSound
+	private knife_throw_sound!: Phaser.Sound.BaseSound
 
 	get health()
 	{
@@ -51,9 +51,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 
 		this.setScale(SCALE)
 
-		this.death_sound = scene.sound.add('player-death-sound')
-		this.hurt_sound = scene.sound.add('player-hurt-sound')
-		this.knife_throw_sound = scene.sound.add('knife-throw-sound')
+		this.death_sound = scene.sound.add('player-death-sound', {volume: 0.2})
+		this.hurt_sound = scene.sound.add('player-hurt-sound', {volume: 0.2})
+		this.knife_throw_sound = scene.sound.add('knife-throw-sound', {volume: 0.2})
 	}
 
 	setKnives(knives: Phaser.Physics.Arcade.Group)
@@ -110,13 +110,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 		}
 
 		const knife = this.knives.get(this.x, this.y, 'knife') as Phaser.Physics.Arcade.Image
-		
+
 		if (!knife)
 		{
 			return
 		}
 
-		this.knife_throw_sound.play()
+		//this.knife_throw_sound.play()
 
 		const parts = this.anims.currentAnim.key.split('-')
 		const direction = parts[2]

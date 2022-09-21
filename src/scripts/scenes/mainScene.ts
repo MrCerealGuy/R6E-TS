@@ -23,6 +23,8 @@ export default class MainScene extends Phaser.Scene {
 	private player!: Player
 
 	private knives!: Phaser.Physics.Arcade.Group
+	private knife_hit_wall_sound!: Phaser.Sound.BaseSound
+
 	private grunts!: Phaser.Physics.Arcade.Group
 
 	private playerGruntsCollider?: Phaser.Physics.Arcade.Collider
@@ -45,6 +47,10 @@ export default class MainScene extends Phaser.Scene {
 
 		this.load.audio('knife-throw-sound', [
 			'assets/weapons/knife-throw.mp3'
+		]);
+
+		this.load.audio('knife-thrust-into-wall-sound', [
+			'assets/weapons/knife-thrust-into-wall.mp3'
 		]);
 
 		this.load.audio('grunt-death-sound', [
@@ -86,6 +92,8 @@ export default class MainScene extends Phaser.Scene {
 			classType: Phaser.Physics.Arcade.Image,
 			maxSize: 3
 		})
+
+		this.knife_hit_wall_sound = this.sound.add('knife-thrust-into-wall-sound', {volume: 0.2})
     
 		this.player = this.add.player(64*SCALE, 32*SCALE, 'player')
 		this.player.setKnives(this.knives)
@@ -141,21 +149,27 @@ export default class MainScene extends Phaser.Scene {
 
 	private handleKnifeWallCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject)
 	{
+		this.knife_hit_wall_sound.play()
 		this.knives.killAndHide(obj1)
 	}
 
 	private handleKnifeGruntCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject)
 	{
 		const grunt = obj2 as Grunt
-		grunt.handleDeath()
+
+		if (!grunt.dead)
+			grunt.handleDeath()
 
 		this.knives.killAndHide(obj1) // knives
-		this.grunts.killAndHide(obj2) // grunts
+		//this.grunts.killAndHide(obj2) // grunts
 	}
 
 	private handlePlayerGruntCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject)
 	{
 		const grunt = obj2 as Grunt
+
+		if (grunt.dead)
+			return
 		
 		const dx = this.player.x - grunt.x
 		const dy = this.player.y - grunt.y
