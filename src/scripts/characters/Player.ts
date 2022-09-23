@@ -3,28 +3,23 @@ import Chest from '../items/Chest'
 
 import { sceneEvents } from '../events/EventsCenter'
 
-import {SCALE} from '../utils/globals'
+import { SCALE } from '../utils/globals'
 
-declare global
-{
-	namespace Phaser.GameObjects
-	{
-		interface GameObjectFactory
-		{
+declare global {
+	namespace Phaser.GameObjects {
+		interface GameObjectFactory {
 			player(x: number, y: number, texture: string, frame?: string | number): Player
 		}
 	}
 }
 
-enum HealthState
-{
+enum HealthState {
 	IDLE,
 	DAMAGE,
 	DEAD
 }
 
-export default class Player extends Phaser.Physics.Arcade.Sprite
-{
+export default class Player extends Phaser.Physics.Arcade.Sprite {
 	private healthState = HealthState.IDLE
 	private damageTime = 0
 
@@ -38,50 +33,45 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 	private hurt_sound!: Phaser.Sound.BaseSound
 	private knife_throw_sound!: Phaser.Sound.BaseSound
 
-	get health()
-	{
+	private lastFired = 0
+
+	get health() {
 		return this._health
 	}
 
-	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number)
-	{
-		super(scene, x*SCALE, y*SCALE, texture, frame)
+	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
+		super(scene, x * SCALE, y * SCALE, texture, frame)
 
 		this.anims.play('player-idle-down')
 
 		this.setScale(SCALE)
+		this.setDepth(1)
 
-		this.death_sound = scene.sound.add('player-death-sound', {volume: 0.2})
-		this.hurt_sound = scene.sound.add('player-hurt-sound', {volume: 0.2})
-		this.knife_throw_sound = scene.sound.add('knife-throw-sound', {volume: 0.2})
+		this.death_sound = scene.sound.add('player-death-sound', { volume: 0.2 })
+		this.hurt_sound = scene.sound.add('player-hurt-sound', { volume: 0.2 })
+		this.knife_throw_sound = scene.sound.add('knife-throw-sound', { volume: 0.2 })
 	}
 
-	setKnives(knives: Phaser.Physics.Arcade.Group)
-	{
+	setKnives(knives: Phaser.Physics.Arcade.Group) {
 		this.knives = knives
 	}
 
-	setChest(chest: Chest)
-	{
+	setChest(chest: Chest) {
 		this.activeChest = chest
 	}
 
-	handleDamage(dir: Phaser.Math.Vector2)
-	{
-		if (this._health <= 0)
-		{
+	handleDamage(dir: Phaser.Math.Vector2) {
+		if (this._health <= 0) {
 			return
 		}
 
-		if (this.healthState === HealthState.DAMAGE)
-		{
+		if (this.healthState === HealthState.DAMAGE) {
 			return
 		}
 
 		--this._health
 
-		if (this._health <= 0)
-		{
+		if (this._health <= 0) {
 			// TODO: die
 			this.healthState = HealthState.DEAD
 			this.anims.play('player-faint')
@@ -89,8 +79,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 
 			this.death_sound.play()
 		}
-		else
-		{
+		else {
 			this.setVelocity(dir.x, dir.y)
 
 			this.setTint(0xff0000)
@@ -102,17 +91,14 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 		}
 	}
 
-	private throwKnife()
-	{
-		if (!this.knives)
-		{
+	private throwKnife() {
+		if (!this.knives) {
 			return
 		}
 
 		const knife = this.knives.get(this.x, this.y, 'knife') as Phaser.Physics.Arcade.Image
 
-		if (!knife)
-		{
+		if (!knife) {
 			return
 		}
 
@@ -123,8 +109,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 
 		const vec = new Phaser.Math.Vector2(0, 0)
 
-		switch (direction)
-		{
+		switch (direction) {
 			case 'up':
 				vec.y = -1
 				break
@@ -135,12 +120,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 
 			default:
 			case 'side':
-				if (this.scaleX < 0)
-				{
+				if (this.scaleX < 0) {
 					vec.x = -1
 				}
-				else
-				{
+				else {
 					vec.x = 1
 				}
 				break
@@ -159,19 +142,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 		knife.setVelocity(vec.x * 300, vec.y * 300)
 	}
 
-	preUpdate(t: number, dt: number)
-	{
+	preUpdate(t: number, dt: number) {
 		super.preUpdate(t, dt)
 
-		switch (this.healthState)
-		{
+		switch (this.healthState) {
 			case HealthState.IDLE:
 				break
 
 			case HealthState.DAMAGE:
 				this.damageTime += dt
-				if (this.damageTime >= 250)
-				{
+				if (this.damageTime >= 250) {
 					this.healthState = HealthState.IDLE
 					this.setTint(0xffffff)
 					this.damageTime = 0
@@ -180,41 +160,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 		}
 	}
 
-	update(cursors: Phaser.Types.Input.Keyboard.CursorKeys, pads: Phaser.Input.Gamepad.Gamepad[])
-	{
-		if (this.healthState === HealthState.DAMAGE
-			|| this.healthState === HealthState.DEAD
-		)
-		{
-			return
-		}
-
-		if (!cursors)
-		{
-			return
-		}
-
-		if (!pads)
-		{
-			return
-		}
-
-		if (Phaser.Input.Keyboard.JustDown(cursors.space!) || (pads[0] != null && pads[0].buttons[2].value==1))
-		{
-			if (this.activeChest)
-			{
-				const coins = this.activeChest.open()
-				this._coins += coins
-
-				sceneEvents.emit('player-coins-changed', this._coins)
-			}
-			else
-			{
-				this.throwKnife()
-			}
-			return
-		}
-
+	update(time: number, cursors: Phaser.Types.Input.Keyboard.CursorKeys, pads: Phaser.Input.Gamepad.Gamepad[]) {
 		const speed = 50
 
 		const leftDown = cursors.left?.isDown
@@ -222,42 +168,72 @@ export default class Player extends Phaser.Physics.Arcade.Sprite
 		const upDown = cursors.up?.isDown
 		const downDown = cursors.down?.isDown
 
-		if (leftDown || (pads[0] != null && pads[0].buttons[14].value==1))
-		{
+		const padLeftDown = pads[0]?.buttons[14]?.value
+		const padRightDown = pads[0]?.buttons[15]?.value
+		const padUpDown = pads[0]?.buttons[12]?.value
+		const padDownDown = pads[0]?.buttons[13]?.value
+
+		const padXButtonDown = pads[0]?.buttons[2]?.value
+
+		if (this.healthState === HealthState.DAMAGE
+			|| this.healthState === HealthState.DEAD
+		) {
+			return
+		}
+
+		if (!cursors) {
+			return
+		}
+
+		if (!pads) {
+			return
+		}
+
+		if (Phaser.Input.Keyboard.JustDown(cursors.space!) || padXButtonDown) {
+			if (this.activeChest) {
+				const coins = this.activeChest.open()
+				this._coins += coins
+
+				sceneEvents.emit('player-coins-changed', this._coins)
+			}
+			else if (time > this.lastFired) {
+				this.throwKnife()
+
+				this.lastFired = time + 1000
+			}
+			return
+		}
+
+		if (leftDown || padLeftDown) {
 			this.anims.play('player-run-side', true)
 			this.setVelocity(-speed, 0)
 
 			this.scaleX = -1
 			this.body.offset.x = 8
 		}
-		else if (rightDown || (pads[0] != null && pads[0].buttons[15].value==1))
-		{
+		else if (rightDown || padRightDown) {
 			this.anims.play('player-run-side', true)
 			this.setVelocity(speed, 0)
 
 			this.scaleX = 1
 			this.body.offset.x = 0
 		}
-		else if (upDown || (pads[0] != null && pads[0].buttons[12].value==1))
-		{
+		else if (upDown || padUpDown) {
 			this.anims.play('player-run-up', true)
 			this.setVelocity(0, -speed)
 		}
-		else if (downDown || (pads[0] != null && pads[0].buttons[13].value==1))
-		{
+		else if (downDown || padDownDown) {
 			this.anims.play('player-run-down', true)
 			this.setVelocity(0, speed)
 		}
-		else
-		{
+		else {
 			const parts = this.anims.currentAnim.key.split('-')
 			parts[1] = 'idle'
 			this.anims.play(parts.join('-'))
 			this.setVelocity(0, 0)
 		}
 
-		if (leftDown || rightDown || upDown || downDown)
-		{
+		if (leftDown || rightDown || upDown || downDown) {
 			this.activeChest = undefined
 		}
 	}
@@ -272,7 +248,7 @@ Phaser.GameObjects.GameObjectFactory.register('player', function (this: Phaser.G
 	this.scene.physics.world.enableBody(sprite, Phaser.Physics.Arcade.DYNAMIC_BODY)
 
 	//sprite.body.setSize(sprite.width * 0.5, sprite.height * 0.8)
-	sprite.body.setSize(sprite.width*SCALE, sprite.height*SCALE)
+	sprite.body.setSize(sprite.width * SCALE, sprite.height * SCALE)
 
 	return sprite
 })

@@ -1,9 +1,8 @@
 import Phaser from 'phaser'
 
-import {SCALE} from '../utils/globals'
+import { SCALE } from '../utils/globals'
 
-enum Direction
-{
+enum Direction {
 	UP,
 	DOWN,
 	LEFT,
@@ -12,16 +11,14 @@ enum Direction
 
 const randomDirection = (exclude: Direction) => {
 	let newDirection = Phaser.Math.Between(0, 3)
-	while (newDirection === exclude)
-	{
+	while (newDirection === exclude) {
 		newDirection = Phaser.Math.Between(0, 3)
 	}
 
 	return newDirection
 }
 
-export default class Grunt extends Phaser.Physics.Arcade.Sprite
-{
+export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	private direction = Direction.RIGHT
 	private moveEvent: Phaser.Time.TimerEvent
 
@@ -30,9 +27,10 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite
 
 	public dead: boolean = false
 
-	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number)
-	{
-		super(scene, x*SCALE, y*SCALE, texture, frame)
+	private attention_circle
+
+	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
+		super(scene, x * SCALE, y * SCALE, texture, frame)
 
 		this.anims.play('grunt-idle')
 
@@ -48,45 +46,43 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite
 
 		this.setScale(SCALE)
 
-		this.death_sound = scene.sound.add('grunt-death-sound', {volume: 0.2})
-		this.hurt_sound = scene.sound.add('grunt-hurt-sound', {volume: 0.2})
+		this.death_sound = scene.sound.add('grunt-death-sound', { volume: 0.2 })
+		this.hurt_sound = scene.sound.add('grunt-hurt-sound', { volume: 0.2 })
+
+		this.attention_circle = scene.add.circle(x * SCALE,y * SCALE,20)
+		this.attention_circle.setStrokeStyle(1, 0xff0000)
 	}
 
-	handleDamage()
-	{
+	handleDamage() {
 		// tbd
 		this.hurt_sound.play()
 	}
 
-	handleDeath()
-	{
+	handleDeath() {
 		this.dead = true
 		this.moveEvent.destroy()
 
 		this.death_sound.play()
 		this.anims.play('grunt-faint')
 
+		this.disableBody()
 		this.setVelocity(0, 0)
 	}
 
-	destroy(fromScene?: boolean)
-	{
+	destroy(fromScene?: boolean) {
 		this.moveEvent.destroy()
 		super.destroy(fromScene)
 	}
 
-	private handleTileCollision(go: Phaser.GameObjects.GameObject, tile: Phaser.Tilemaps.Tile)
-	{
-		if (go !== this)
-		{
+	private handleTileCollision(go: Phaser.GameObjects.GameObject, tile: Phaser.Tilemaps.Tile) {
+		if (go !== this) {
 			return
 		}
 
 		this.direction = randomDirection(this.direction)
 	}
 
-	preUpdate(t: number, dt: number)
-	{
+	preUpdate(t: number, dt: number) {
 		super.preUpdate(t, dt)
 
 		if (this.dead)
@@ -94,8 +90,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite
 
 		const speed = 15
 
-		switch (this.direction)
-		{
+		switch (this.direction) {
 			case Direction.UP:
 				this.setVelocity(0, -speed)
 				break
@@ -112,5 +107,8 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite
 				this.setVelocity(speed, 0)
 				break
 		}
+
+		//this.attention_circle.x = this.x
+		//this.attention_circle.x = this.y
 	}
 }

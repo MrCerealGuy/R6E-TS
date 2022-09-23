@@ -7,16 +7,16 @@ export default class PreloadScene extends Phaser.Scene {
 
     // preload gfx
     this.load.image('tiles', 'assets/tiles/tileset01.png')
-		this.load.tilemapTiledJSON('tileset1', 'assets/tiles/map1.json')
+    this.load.tilemapTiledJSON('tileset1', 'assets/tiles/map1.json')
 
-		this.load.atlas('player', 'assets/character/player.png', 'assets/character/player.json')
-		this.load.atlas('grunt', 'assets/enemies/grunt.png', 'assets/enemies/grunt.json')
-		this.load.atlas('treasure', 'assets/items/treasure.png', 'assets/items/treasure.json')
+    this.load.atlas('player', 'assets/character/player.png', 'assets/character/player.json')
+    this.load.atlas('grunt', 'assets/enemies/grunt.png', 'assets/enemies/grunt.json')
+    this.load.atlas('treasure', 'assets/items/treasure.png', 'assets/items/treasure.json')
 
-		this.load.image('ui-heart-empty', 'assets/ui/ui_heart_empty.png')
-		this.load.image('ui-heart-full', 'assets/ui/ui_heart_full.png')
+    this.load.image('ui-heart-empty', 'assets/ui/ui_heart_empty.png')
+    this.load.image('ui-heart-full', 'assets/ui/ui_heart_full.png')
 
-		this.load.image('knife', 'assets/weapons/weapon_knife.png')
+    this.load.image('knife', 'assets/weapons/weapon_knife.png')
   }
 
   create() {
