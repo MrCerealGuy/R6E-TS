@@ -64,7 +64,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 		this.detected_player = true
 
 		this.anims.play('grund-idle')
-		this.detected_sound.play())
+		this.detected_sound.play()
 		this.setVelocity(0, 0)
 	}
 
