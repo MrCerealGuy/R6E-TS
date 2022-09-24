@@ -18,6 +18,8 @@ const randomDirection = (exclude: Direction) => {
 	return newDirection
 }
 
+const detectionRadius: number = 60
+
 export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	private direction = Direction.RIGHT
 	private moveEvent: Phaser.Time.TimerEvent
@@ -48,12 +50,21 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 		this.setScale(SCALE)
 
-		this.death_sound = scene.sound.add('grunt-death-sound', { volume: 0.2 })
-		this.hurt_sound = scene.sound.add('grunt-hurt-sound', { volume: 0.2 })
-		this.detected_sound = scene.sound.add('grunt-detected-sound', { volume: 0.2 })
+		this.death_sound = scene.sound.add('grunt-death-sound', { volume: 0.2, loop: false })
+		this.hurt_sound = scene.sound.add('grunt-hurt-sound', { volume: 0.2, loop: false })
+		this.detected_sound = scene.sound.add('grunt-detected-sound', { volume: 0.2, loop: false })
 
-		this.detectionArea = scene.add.circle(x * SCALE,y * SCALE,20)
+		this.detectionArea = scene.add.circle(x * SCALE,y * SCALE, detectionRadius)
 		this.detectionArea.setStrokeStyle(1, 0xff0000)
+		this.detectionArea.setVisible(false)
+	}
+
+	isDead() {
+		return this.dead
+	}
+
+	isPlayerDetected() {
+		return this.detected_player
 	}
 
 	getDetectionArea() {
@@ -61,9 +72,13 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	handleDetection() {
+		if (this.dead)
+			return
+
 		this.detected_player = true
 
-		this.anims.play('grund-idle')
+		this.detectionArea.setVisible(true)
+		this.anims.play('grunt-idle')
 		this.detected_sound.play()
 		this.setVelocity(0, 0)
 	}
@@ -79,6 +94,9 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 		this.death_sound.play()
 		this.anims.play('grunt-faint')
+
+		//this.detectionArea.destroy(true)
+		this.detectionArea.setVisible(false)
 
 		this.disableBody()
 		this.setVelocity(0, 0)

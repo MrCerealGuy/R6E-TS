@@ -213,12 +213,15 @@ export default class MainScene extends Phaser.Scene {
 		// Check for player detection
 		this.grunts.children.each(child => {
 			const grunt = child as Grunt
-			
-			var radius = grunt.getDetectionArea().radius
-			var dis = Phaser.Math.Distance.Between(this.player.x, this.player.y, grunt.x, grunt.y)
 
-			if (dis <= radius)
-				grunt.handleDetection()
+			if (!grunt.isDead() && !grunt.isPlayerDetected())
+			{
+				var radius = grunt.getDetectionArea()?.radius
+				var dis = Phaser.Math.Distance.Between(this.player.x, this.player.y, grunt.x, grunt.y)
+
+				if (dis <= radius)
+					grunt.handleDetection()
+			}
 		})
 	}
 }
