@@ -24,11 +24,12 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 	private death_sound!: Phaser.Sound.BaseSound
 	private hurt_sound!: Phaser.Sound.BaseSound
+	private detected_sound!: Phaser.Sound.BaseSound
 
 	public dead: boolean = false
-
-	private attention_circle!: Phaser.GameObjects.Arc
-	//private playerAttentionCircleCollider?: Phaser.Physics.Arcade.Collider
+	
+	private detectionArea!: Phaser.GameObjects.Arc
+	private detected_player: boolean = false
 
 	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
 		super(scene, x * SCALE, y * SCALE, texture, frame)
@@ -49,22 +50,22 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 		this.death_sound = scene.sound.add('grunt-death-sound', { volume: 0.2 })
 		this.hurt_sound = scene.sound.add('grunt-hurt-sound', { volume: 0.2 })
+		this.detected_sound = scene.sound.add('grunt-detected-sound', { volume: 0.2 })
 
-		this.attention_circle = scene.add.circle(x * SCALE,y * SCALE,20)
-		this.attention_circle.setStrokeStyle(1, 0xff0000)
-/*
-		this.playerAttentionCircleCollider = scene.physics.add.collider(
-			this.attention_circle,
-			
-			this.handlePlayerAttentionCircleCollision,
-			undefined,
-			this
-		)
-		*/
+		this.detectionArea = scene.add.circle(x * SCALE,y * SCALE,20)
+		this.detectionArea.setStrokeStyle(1, 0xff0000)
 	}
 
-	public getAttentionCircle(){
-		return this.attention_circle
+	getDetectionArea() {
+		return this.detectionArea
+	}
+
+	handleDetection() {
+		this.detected_player = true
+
+		this.anims.play('grund-idle')
+		this.detected_sound.play())
+		this.setVelocity(0, 0)
 	}
 
 	handleDamage() {
@@ -87,11 +88,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 		this.moveEvent.destroy()
 		super.destroy(fromScene)
 	}
-/*
-	private handlePlayerAttentionCircleCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
 
-	}
-*/
 	private handleTileCollision(go: Phaser.GameObjects.GameObject, tile: Phaser.Tilemaps.Tile) {
 		if (go !== this) {
 			return
@@ -104,6 +101,9 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 		super.preUpdate(t, dt)
 
 		if (this.dead)
+			return
+
+		if (this.detected_player)
 			return
 
 		const speed = 15
@@ -126,7 +126,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 				break
 		}
 
-		this.attention_circle.x = this.x
-		this.attention_circle.y = this.y
+		this.detectionArea.x = this.x
+		this.detectionArea.y = this.y
 	}
 }

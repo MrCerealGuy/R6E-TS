@@ -30,9 +30,10 @@ export default class MainScene extends Phaser.Scene {
 	private knife_hit_wall_sound!: Phaser.Sound.BaseSound
 
 	private grunts!: Phaser.Physics.Arcade.Group
+	//private gruntsDetectionArea!: Phaser.Physics.Arcade.Group
 
 	private playerGruntsCollider?: Phaser.Physics.Arcade.Collider
-	private playerGruntsAttentionCircleCollider?: Phaser.Physics.Arcade.Collider
+	//private playerGruntsDetectionAreaCollider?: Phaser.Physics.Arcade.Collider
 
 	constructor() {
 		super({ key: 'MainScene' })
@@ -57,18 +58,12 @@ export default class MainScene extends Phaser.Scene {
 		this.load.audio('grunt-death-sound', ['assets/enemies/death.mp3'])
 
 		this.load.audio('grunt-hurt-sound', ['assets/enemies/hurt.mp3'])
+
+		this.load.audio('grunt-detected-sound', ['assets/enemies/detected.mp3'])
 	}
 
 	create() {
 		this.fpsText = new FpsText(this)
-
-		// display the Phaser.VERSION
-		this.add
-			.text(this.cameras.main.width - 15, 15, `Phaser v${Phaser.VERSION}`, {
-				color: '#000000',
-				fontSize: '24px'
-			})
-			.setOrigin(1, 0)
 
 		this.scene.run('game-ui')
 
@@ -81,7 +76,7 @@ export default class MainScene extends Phaser.Scene {
 		const map = this.make.tilemap({ key: 'tileset1' })
 		const tileset = map.addTilesetImage('tileset1', 'tiles', 8, 8)
 
-		// Init Tilemap Layers
+		// Init tilemap layers
 		this.initTilemapLayers(map, tileset)
   
 		// Init knives
@@ -106,6 +101,7 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	private initGrunts(map: Phaser.Tilemaps.Tilemap) {
+		// Create group
 		this.grunts = this.physics.add.group({
 			classType: Grunt,
 			createCallback: go => {
@@ -116,6 +112,7 @@ export default class MainScene extends Phaser.Scene {
 
 		this.gruntsLayer = map.getObjectLayer('Grunts')
 
+		// Create grunts from layer
 		this.gruntsLayer.objects.forEach(gruntObj => {
 			this.grunts.get(gruntObj.x! + gruntObj.width! * 0.5, gruntObj.y! - gruntObj.height! * 0.5, 'grunt')
 		})
@@ -157,21 +154,12 @@ export default class MainScene extends Phaser.Scene {
 		this.physics.add.collider(this.knives, this.grunts, this.handleKnifeGruntCollision, undefined, this)
 
 		this.playerGruntsCollider = this.physics.add.collider(
-			this.grunts,
 			this.player,
+			this.grunts,
 			this.handlePlayerGruntCollision,
 			undefined,
 			this
-		)
-		/*
-		this.playerGruntsAttentionCircleCollider = this.physics.add.collider(
-			this.grunts,
-			this.player,
-			this.handlePlayerGruntAttentionCircleCollision,
-			undefined,
-			this
-		)
-		*/
+		)		
 	}
 
 	private handlePlayerChestCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
@@ -192,10 +180,6 @@ export default class MainScene extends Phaser.Scene {
 		this.knives.killAndHide(obj1) // knives
 		//this.grunts.killAndHide(obj2) // grunts
 	}
-/*
-	private handlePlayerGruntAttentionCircleCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
-	}
-	*/
 
 	private handlePlayerGruntCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
 		const grunt = obj2 as Grunt
@@ -217,11 +201,24 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	update(t: number, dt: number) {
-		this.fpsText.update()
+		//this.fpsText.update()
+
 		var pads = this.input.gamepad.gamepads
 
+		// Update player
 		if (this.player) {
 			this.player.update(t, this.cursors, pads)
 		}
+
+		// Check for player detection
+		this.grunts.children.each(child => {
+			const grunt = child as Grunt
+			
+			var radius = grunt.getDetectionArea().radius
+			var dis = Phaser.Math.Distance.Between(this.player.x, this.player.y, grunt.x, grunt.y)
+
+			if (dis <= radius)
+				grunt.handleDetection()
+		})
 	}
 }
