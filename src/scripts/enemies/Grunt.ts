@@ -137,10 +137,14 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 			case Direction.LEFT:
 				this.setVelocity(-speed, 0)
+				this.scaleX = 1
+				this.body.offset.x = 0
 				break
 
 			case Direction.RIGHT:
 				this.setVelocity(speed, 0)
+				this.scaleX = -1
+				this.body.offset.x = 8
 				break
 		}
 

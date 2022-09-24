@@ -30,10 +30,8 @@ export default class MainScene extends Phaser.Scene {
 	private knife_hit_wall_sound!: Phaser.Sound.BaseSound
 
 	private grunts!: Phaser.Physics.Arcade.Group
-	//private gruntsDetectionArea!: Phaser.Physics.Arcade.Group
 
 	private playerGruntsCollider?: Phaser.Physics.Arcade.Collider
-	//private playerGruntsDetectionAreaCollider?: Phaser.Physics.Arcade.Collider
 
 	constructor() {
 		super({ key: 'MainScene' })
