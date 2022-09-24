@@ -27,7 +27,8 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 	public dead: boolean = false
 
-	private attention_circle
+	private attention_circle!: Phaser.GameObjects.Arc
+	//private playerAttentionCircleCollider?: Phaser.Physics.Arcade.Collider
 
 	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
 		super(scene, x * SCALE, y * SCALE, texture, frame)
@@ -51,6 +52,19 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 		this.attention_circle = scene.add.circle(x * SCALE,y * SCALE,20)
 		this.attention_circle.setStrokeStyle(1, 0xff0000)
+/*
+		this.playerAttentionCircleCollider = scene.physics.add.collider(
+			this.attention_circle,
+			
+			this.handlePlayerAttentionCircleCollision,
+			undefined,
+			this
+		)
+		*/
+	}
+
+	public getAttentionCircle(){
+		return this.attention_circle
 	}
 
 	handleDamage() {
@@ -73,7 +87,11 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 		this.moveEvent.destroy()
 		super.destroy(fromScene)
 	}
+/*
+	private handlePlayerAttentionCircleCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
 
+	}
+*/
 	private handleTileCollision(go: Phaser.GameObjects.GameObject, tile: Phaser.Tilemaps.Tile) {
 		if (go !== this) {
 			return
@@ -108,7 +126,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 				break
 		}
 
-		//this.attention_circle.x = this.x
-		//this.attention_circle.x = this.y
+		this.attention_circle.x = this.x
+		this.attention_circle.y = this.y
 	}
 }

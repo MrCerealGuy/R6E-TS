@@ -19,6 +19,10 @@ import { SCALE } from '../utils/globals'
 export default class MainScene extends Phaser.Scene {
 	private fpsText
 
+	private groundLayer!: Phaser.Tilemaps.TilemapLayer
+	private wallsLayer!: Phaser.Tilemaps.TilemapLayer
+	private gruntsLayer!: Phaser.Tilemaps.ObjectLayer
+
 	private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
 	private player!: Player
 
@@ -28,9 +32,14 @@ export default class MainScene extends Phaser.Scene {
 	private grunts!: Phaser.Physics.Arcade.Group
 
 	private playerGruntsCollider?: Phaser.Physics.Arcade.Collider
+	private playerGruntsAttentionCircleCollider?: Phaser.Physics.Arcade.Collider
 
 	constructor() {
 		super({ key: 'MainScene' })
+	}
+
+	public getPlayer() {
+		return this.player
 	}
 
 	preload() {
@@ -63,18 +72,19 @@ export default class MainScene extends Phaser.Scene {
 
 		this.scene.run('game-ui')
 
+		// Init anims
 		createCharacterAnims(this.anims)
 		createGruntAnims(this.anims)
 		createChestAnims(this.anims)
 
+		// Init map and tileset
 		const map = this.make.tilemap({ key: 'tileset1' })
 		const tileset = map.addTilesetImage('tileset1', 'tiles', 8, 8)
+
+		// Init Tilemap Layers
+		this.initTilemapLayers(map, tileset)
   
-		const groundLayer = map.createLayer('Ground', tileset)
-		groundLayer.setScale(SCALE)
-
-		groundLayer.setCollisionByProperty({ collides: true })
-
+		// Init knives
 		this.knives = this.physics.add.group({
 			classType: Phaser.Physics.Arcade.Image,
 			maxSize: 3
@@ -82,47 +92,67 @@ export default class MainScene extends Phaser.Scene {
 
 		this.knife_hit_wall_sound = this.sound.add('knife-thrust-into-wall-sound', { volume: 0.2 })
 
+		// Init player
 		this.player = this.add.player(64 * SCALE, 32 * SCALE, 'player')
 		this.player.setKnives(this.knives)
 
-		const wallsLayer = map.createLayer('Walls', tileset)
-		wallsLayer.setScale(SCALE)
-
-		wallsLayer.setCollisionByProperty({ collides: true })
-
-		const chests = this.physics.add.staticGroup({
-			classType: Chest
-		})
-		/*const chestsLayer = map.getObjectLayer('Chests')
-			chestsLayer.objects.forEach(chestObj => {
-				chests.get(chestObj.x! + chestObj.width! * 0.5, chestObj.y! - chestObj.height! * 0.5, 'treasure')
-			})*/
-
 		this.cameras.main.startFollow(this.player, true)
 
+		// Init grunts
+		this.initGrunts(map)
+
+		// Init colliders
+		this.initColliders()
+	}
+
+	private initGrunts(map: Phaser.Tilemaps.Tilemap) {
 		this.grunts = this.physics.add.group({
 			classType: Grunt,
 			createCallback: go => {
-				const lizGo = go as Grunt
-				lizGo.body.onCollide = true
+				const gruntGo = go as Grunt
+				gruntGo.body.onCollide = true
 			}
 		})
 
-		const gruntsLayer = map.getObjectLayer('Grunts')
+		this.gruntsLayer = map.getObjectLayer('Grunts')
 
-		gruntsLayer.objects.forEach(lizObj => {
-			this.grunts.get(lizObj.x! + lizObj.width! * 0.5, lizObj.y! - lizObj.height! * 0.5, 'grunt')
+		this.gruntsLayer.objects.forEach(gruntObj => {
+			this.grunts.get(gruntObj.x! + gruntObj.width! * 0.5, gruntObj.y! - gruntObj.height! * 0.5, 'grunt')
+		})
+	}
+
+	private initTilemapLayers(map: Phaser.Tilemaps.Tilemap, tileset: Phaser.Tilemaps.Tileset) {
+		this.groundLayer = map.createLayer('Ground', tileset)
+		this.groundLayer.setScale(SCALE)
+
+		this.groundLayer.setCollisionByProperty({ collides: true })
+
+		this.wallsLayer = map.createLayer('Walls', tileset)
+		this.wallsLayer.setScale(SCALE)
+
+		this.wallsLayer.setCollisionByProperty({ collides: true })
+
+		/*
+		const chests = this.physics.add.staticGroup({
+			classType: Chest
 		})
 
-		this.physics.add.collider(this.player, groundLayer)
-		this.physics.add.collider(this.grunts, groundLayer)
+		const chestsLayer = map.getObjectLayer('Chests')
+			chestsLayer.objects.forEach(chestObj => {
+				chests.get(chestObj.x! + chestObj.width! * 0.5, chestObj.y! - chestObj.height! * 0.5, 'treasure')
+			})*/
+	}
 
-		this.physics.add.collider(this.player, wallsLayer)
-		this.physics.add.collider(this.grunts, wallsLayer)
+	private initColliders() {
+		this.physics.add.collider(this.player, this.groundLayer)
+		this.physics.add.collider(this.grunts, this.groundLayer)
 
-		this.physics.add.collider(this.player, chests, this.handlePlayerChestCollision, undefined, this)
+		this.physics.add.collider(this.player, this.wallsLayer)
+		this.physics.add.collider(this.grunts, this.wallsLayer)
 
-		this.physics.add.collider(this.knives, wallsLayer, this.handleKnifeWallCollision, undefined, this)
+		//this.physics.add.collider(this.player, chests, this.handlePlayerChestCollision, undefined, this)
+
+		this.physics.add.collider(this.knives, this.wallsLayer, this.handleKnifeWallCollision, undefined, this)
 		
 		this.physics.add.collider(this.knives, this.grunts, this.handleKnifeGruntCollision, undefined, this)
 
@@ -133,6 +163,15 @@ export default class MainScene extends Phaser.Scene {
 			undefined,
 			this
 		)
+		/*
+		this.playerGruntsAttentionCircleCollider = this.physics.add.collider(
+			this.grunts,
+			this.player,
+			this.handlePlayerGruntAttentionCircleCollision,
+			undefined,
+			this
+		)
+		*/
 	}
 
 	private handlePlayerChestCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
@@ -153,6 +192,10 @@ export default class MainScene extends Phaser.Scene {
 		this.knives.killAndHide(obj1) // knives
 		//this.grunts.killAndHide(obj2) // grunts
 	}
+/*
+	private handlePlayerGruntAttentionCircleCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
+	}
+	*/
 
 	private handlePlayerGruntCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
 		const grunt = obj2 as Grunt
