@@ -1,5 +1,8 @@
 import Phaser from 'phaser'
 
+import '../characters/Player'
+import Player from '../characters/Player'
+
 import { SCALE } from '../utils/globals'
 
 enum Direction {
@@ -32,6 +35,12 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	
 	private detectionArea!: Phaser.GameObjects.Arc
 	private detected_player: boolean = false
+	private detected_time: number = 0
+
+	private followPlayer: boolean = false
+	private followPath
+	private followPathIndex: number = 0
+	private followLastFollowTime: number = 0
 
 	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
 		super(scene, x * SCALE, y * SCALE, texture, frame)
@@ -63,6 +72,22 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 		return this.dead
 	}
 
+	getX() {
+		return this.x
+	}
+
+	getY() {
+		return this.y
+	}
+
+	moveTo(map: Phaser.Tilemaps.Tilemap, player: Player, path) {
+		// Sets up a list of tweens, one for each tile to walk, that will be chained by the timeline
+
+		this.followPlayer = true
+		this.followPath = path
+		this.followPathIndex = 0
+	}
+
 	isPlayerDetected() {
 		return this.detected_player
 	}
@@ -73,6 +98,9 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 	handleDetection() {
 		if (this.dead)
+			return
+
+		if (this.followPlayer)
 			return
 
 		this.detected_player = true
@@ -121,31 +149,61 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 		if (this.dead)
 			return
 
-		if (this.detected_player)
+		if (this.detected_player) {
+			if (this.detected_time == 0)
+				this.detected_time = t
+			else if (t > (this.detected_time+1000)){
+				this.detected_time = 0
+				this.detected_player = false
+			}
+
 			return
+		}
+		else
+			this.detectionArea.setVisible(false)
 
-		const speed = 15
+		if (this.followPlayer) {
+			if (this.followLastFollowTime == 0) {
+				if (this.followPathIndex < this.followPath.length) {
+					this.x = this.followPath[this.followPathIndex].x*8
+					this.y = this.followPath[this.followPathIndex].y*8
 
-		switch (this.direction) {
-			case Direction.UP:
-				this.setVelocity(0, -speed)
-				break
+					this.followPathIndex++
+					this.followLastFollowTime = t
+				}
+				else {
+					this.followPlayer = false
+					this.followPathIndex = 0
+				}
+			}
+			else if (t > (this.followLastFollowTime+200)) {
+				this.followLastFollowTime = 0
+			}
+		}
+		else {
+			const speed = 15
 
-			case Direction.DOWN:
-				this.setVelocity(0, speed)
-				break
+			switch (this.direction) {
+				case Direction.UP:
+					this.setVelocity(0, -speed)
+					break
 
-			case Direction.LEFT:
-				this.setVelocity(-speed, 0)
-				this.scaleX = 1
-				this.body.offset.x = 0
-				break
+				case Direction.DOWN:
+					this.setVelocity(0, speed)
+					break
 
-			case Direction.RIGHT:
-				this.setVelocity(speed, 0)
-				this.scaleX = -1
-				this.body.offset.x = 8
-				break
+				case Direction.LEFT:
+					this.setVelocity(-speed, 0)
+					this.scaleX = 1
+					this.body.offset.x = 0
+					break
+
+				case Direction.RIGHT:
+					this.setVelocity(speed, 0)
+					this.scaleX = -1
+					this.body.offset.x = 8
+					break
+			}
 		}
 
 		this.detectionArea.x = this.x

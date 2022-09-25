@@ -15,10 +15,12 @@ import Chest from '../items/Chest'
 import { Game } from 'phaser'
 
 import { SCALE } from '../utils/globals'
+import { EasyStar } from '../libs/easystar'
 
 export default class MainScene extends Phaser.Scene {
 	private fpsText
 
+	private map!: Phaser.Tilemaps.Tilemap
 	private groundLayer!: Phaser.Tilemaps.TilemapLayer
 	private wallsLayer!: Phaser.Tilemaps.TilemapLayer
 	private gruntsLayer!: Phaser.Tilemaps.ObjectLayer
@@ -30,8 +32,9 @@ export default class MainScene extends Phaser.Scene {
 	private knife_hit_wall_sound!: Phaser.Sound.BaseSound
 
 	private grunts!: Phaser.Physics.Arcade.Group
-
 	private playerGruntsCollider?: Phaser.Physics.Arcade.Collider
+	private finder
+
 
 	constructor() {
 		super({ key: 'MainScene' })
@@ -71,11 +74,11 @@ export default class MainScene extends Phaser.Scene {
 		createChestAnims(this.anims)
 
 		// Init map and tileset
-		const map = this.make.tilemap({ key: 'tileset1' })
-		const tileset = map.addTilesetImage('tileset1', 'tiles', 8, 8)
+		this.map = this.make.tilemap({ key: 'tileset1' })
+		const tileset = this.map.addTilesetImage('tileset1', 'tiles', 8, 8)
 
 		// Init tilemap layers
-		this.initTilemapLayers(map, tileset)
+		this.initTilemapLayers(this.map, tileset)
   
 		// Init knives
 		this.knives = this.physics.add.group({
@@ -92,10 +95,63 @@ export default class MainScene extends Phaser.Scene {
 		this.cameras.main.startFollow(this.player, true)
 
 		// Init grunts
-		this.initGrunts(map)
+		this.initGrunts(this.map)
 
 		// Init colliders
 		this.initColliders()
+
+		// Init EasyStar
+		this.initEasyStar(this.map, tileset)
+	}
+
+	private initEasyStar(map: Phaser.Tilemaps.Tilemap, tiles: Phaser.Tilemaps.Tileset) {
+		this.finder = new EasyStar.js()
+
+		if (!this.finder) {
+			console.log("Couldn't load EasyStar.")
+			return
+		}
+
+		var grid: number[][] = []
+
+		//console.log("Map height="+map.height+" Map width="+map.width)
+
+		for (var y=0; y < map.height; y++) {
+			var col: number[] = []
+
+			for (var x=0;x < map.width; x++) {
+				var index = this.getTileID(x, y)
+
+				col.push(index)
+				//console.log("x="+x+" y="+y+" index="+index)
+			}
+
+			grid.push(col)
+		}
+
+		console.log("Grid: "+grid)
+		this.finder.setGrid(grid)
+
+		var tileset = map.tilesets[0]
+    	var properties = tileset.tileProperties
+    	var acceptableTiles: number [] = [-1]
+/*
+		for(var i = tileset.firstgid-1; i < tiles.total; i++){ // firstgid and total are fields from Tiled that indicate the range of IDs that the tiles can take in that tileset
+			if(!properties.hasOwnProperty(i)) {
+				// If there is no property indicated at all, it means it's a walkable tile
+				acceptableTiles.push(i+1)
+				continue
+			}
+			if(!properties[i].collides) acceptableTiles.push(i+1)
+		}
+*/
+		console.log("AcceptableTiles: "+acceptableTiles)
+		this.finder.setAcceptableTiles(acceptableTiles)
+	}
+
+	private getTileID(x: number, y: number) {
+		var tile = this.wallsLayer.getTileAt(x, y, true)
+		return tile.index	// -1 = no wall tile
 	}
 
 	private initGrunts(map: Phaser.Tilemaps.Tilemap) {
@@ -202,10 +258,12 @@ export default class MainScene extends Phaser.Scene {
 		//this.fpsText.update()
 
 		var pads = this.input.gamepad.gamepads
+		var map = this.map
+		var player = this.player
 
 		// Update player
-		if (this.player) {
-			this.player.update(t, this.cursors, pads)
+		if (player) {
+			player.update(t, this.cursors, pads)
 		}
 
 		// Check for player detection
@@ -215,10 +273,31 @@ export default class MainScene extends Phaser.Scene {
 			if (!grunt.isDead() && !grunt.isPlayerDetected())
 			{
 				var radius = grunt.getDetectionArea()?.radius
-				var dis = Phaser.Math.Distance.Between(this.player.x, this.player.y, grunt.x, grunt.y)
+				var dis = Phaser.Math.Distance.Between(player.x, player.y, grunt.x, grunt.y)
 
 				if (dis <= radius)
+				{
 					grunt.handleDetection()
+
+					var toX = Math.floor(player.x/8)
+					var toY = Math.floor(player.y/8)
+					var fromX = Math.floor(grunt.getX()/8)
+					var fromY = Math.floor(grunt.getY()/8)
+
+					console.log('going from ('+fromX+','+fromY+') to ('+toX+','+toY+')')
+
+					// Find path
+					this.finder.findPath(fromX, fromY, toX, toY, function(path) {
+						if (path == null) {
+							console.log("Path was not found.")
+						}
+						else {
+							console.log(path)
+							grunt.moveTo(map, player, path)
+						}
+					})
+					this.finder.calculate()
+				}
 			}
 		})
 	}
