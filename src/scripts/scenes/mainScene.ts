@@ -254,7 +254,7 @@ export default class MainScene extends Phaser.Scene {
 			player.update(t, this.cursors, pads)
 		}
 
-		// Check for player detection
+		// Update all grunts
 		this.grunts.children.each(child => {
 			const grunt = child as Grunt
 
@@ -263,8 +263,7 @@ export default class MainScene extends Phaser.Scene {
 				var radius = grunt.getDetectionArea()?.radius
 				var dis = Phaser.Math.Distance.Between(player.x, player.y, grunt.x, grunt.y)
 
-				if (dis <= radius)
-				{
+				if (dis <= radius) {
 					grunt.handleDetection()
 
 					var toX = Math.floor(player.x/8)
