@@ -146,9 +146,11 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	preUpdate(t: number, dt: number) {
 		super.preUpdate(t, dt)
 
+		// Grunt dead?
 		if (this.dead)
 			return
 
+		// Player detected?
 		if (this.detected_player) {
 			if (this.detected_time == 0)
 				this.detected_time = t
@@ -156,14 +158,14 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 				this.detected_time = 0
 				this.detected_player = false
 			}
-
-			return
 		}
 		else
 			this.detectionArea.setVisible(false)
 
+		// Following player?
 		if (this.followPlayer) {
 			if (this.followLastFollowTime == 0) {
+				// Follow player if path end not reached
 				if (this.followPathIndex < this.followPath.length) {
 					this.x = this.followPath[this.followPathIndex].x*8
 					this.y = this.followPath[this.followPathIndex].y*8
@@ -171,7 +173,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 					this.followPathIndex++
 					this.followLastFollowTime = t
 				}
-				else {
+				else {	// Path end reached
 					this.followPlayer = false
 					this.followPathIndex = 0
 				}
@@ -180,6 +182,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 				this.followLastFollowTime = 0
 			}
 		}
+		// Moving grunt
 		else {
 			const speed = 15
 

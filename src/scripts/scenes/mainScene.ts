@@ -114,8 +114,6 @@ export default class MainScene extends Phaser.Scene {
 
 		var grid: number[][] = []
 
-		//console.log("Map height="+map.height+" Map width="+map.width)
-
 		for (var y=0; y < map.height; y++) {
 			var col: number[] = []
 
@@ -123,7 +121,6 @@ export default class MainScene extends Phaser.Scene {
 				var index = this.getTileID(x, y)
 
 				col.push(index)
-				//console.log("x="+x+" y="+y+" index="+index)
 			}
 
 			grid.push(col)
@@ -135,16 +132,7 @@ export default class MainScene extends Phaser.Scene {
 		var tileset = map.tilesets[0]
     	var properties = tileset.tileProperties
     	var acceptableTiles: number [] = [-1]
-/*
-		for(var i = tileset.firstgid-1; i < tiles.total; i++){ // firstgid and total are fields from Tiled that indicate the range of IDs that the tiles can take in that tileset
-			if(!properties.hasOwnProperty(i)) {
-				// If there is no property indicated at all, it means it's a walkable tile
-				acceptableTiles.push(i+1)
-				continue
-			}
-			if(!properties[i].collides) acceptableTiles.push(i+1)
-		}
-*/
+
 		console.log("AcceptableTiles: "+acceptableTiles)
 		this.finder.setAcceptableTiles(acceptableTiles)
 	}
