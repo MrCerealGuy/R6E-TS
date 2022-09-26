@@ -4,6 +4,7 @@ import '../characters/Player'
 import Player from '../characters/Player'
 
 import { SCALE } from '../utils/globals'
+import { StateMachine, State } from '../libs/stateMachine'
 
 enum Direction {
 	UP,
@@ -23,6 +24,36 @@ const randomDirection = (exclude: Direction) => {
 
 const detectionRadius: number = 60
 
+class IdleState extends State {
+	enter(scene, sprite) {
+	
+	}
+	
+	execute(scene, sprite) {
+	 
+	}
+ }
+
+ class FaintState extends State {
+	enter(scene, sprite) {
+	
+	}
+	
+	execute(scene, sprite) {
+	 
+	}
+ }
+
+ class FollowPlayerState extends State {
+	enter(scene, sprite) {
+	
+	}
+	
+	execute(scene, sprite) {
+	 
+	}
+ }
+
 export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	private direction = Direction.RIGHT
 	private moveEvent: Phaser.Time.TimerEvent
@@ -41,6 +72,8 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	private followPath
 	private followPathIndex: number = 0
 	private followLastFollowTime: number = 0
+
+	private stateMachine!: StateMachine
 
 	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
 		super(scene, x * SCALE, y * SCALE, texture, frame)
@@ -66,6 +99,13 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 		this.detectionArea = scene.add.circle(x * SCALE,y * SCALE, detectionRadius)
 		this.detectionArea.setStrokeStyle(1, 0xff0000)
 		this.detectionArea.setVisible(false)
+
+		// Init state machine
+		this.stateMachine = new StateMachine('idle', {
+			idle: new IdleState(),
+			faint: new FaintState(),
+			follow: new FollowPlayerState(),
+		  }, [scene, this]);
 	}
 
 	isDead() {
@@ -151,6 +191,9 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 	preUpdate(t: number, dt: number) {
 		super.preUpdate(t, dt)
+
+		// Update state machine
+		this.stateMachine.step()
 
 		// Grunt dead?
 		if (this.dead)
