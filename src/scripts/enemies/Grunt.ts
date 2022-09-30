@@ -26,31 +26,118 @@ const detectionRadius: number = 60
 
 class IdleState extends State {
 	enter(scene, sprite) {
-	
+		sprite.anims.play('grunt-idle')
+
+		sprite.moveEvent = scene.time.addEvent({
+			delay: 2000,
+			callback: () => {
+				sprite.direction = randomDirection(sprite.direction)
+			},
+			loop: true
+		})
 	}
 	
 	execute(scene, sprite) {
-	 
+		const speed = 15
+
+		switch (sprite.direction) {
+			case Direction.UP:
+				sprite.setVelocity(0, -speed)
+				break
+
+			case Direction.DOWN:
+				sprite.setVelocity(0, speed)
+				break
+
+			case Direction.LEFT:
+				sprite.setVelocity(-speed, 0)
+				sprite.scaleX = 1
+				sprite.body.offset.x = 0
+				break
+
+			case Direction.RIGHT:
+				sprite.setVelocity(speed, 0)
+				sprite.scaleX = -1
+				sprite.body.offset.x = 8
+				break
+		}
 	}
  }
 
  class FaintState extends State {
 	enter(scene, sprite) {
-	
+		sprite.moveEvent.destroy()
+
+		sprite.death_sound.play()
+		sprite.anims.play('grunt-faint')
+
+		sprite.detectionArea.setVisible(false)
+
+		sprite.disableBody()
+		sprite.setVelocity(0, 0)
 	}
 	
 	execute(scene, sprite) {
-	 
+	}
+ }
+
+ class PlayerDetectedState extends State {
+	private detectedEvent: Phaser.Time.TimerEvent
+
+	enter(scene, sprite) {
+		sprite.detectionArea.setVisible(true)
+		sprite.anims.play('grunt-idle')
+		
+		if (!sprite.detected_sound.isPlaying)
+			sprite.detected_sound.play()
+		
+		sprite.setVelocity(0, 0)
+
+		this.detectedEvent = scene.time.addEvent({
+			delay: 1000,
+			callback: () => {
+				sprite.detectionArea.setVisible(false)
+				sprite.stateMachine.transition('follow')
+			},
+			loop: false
+		})
+	}
+	
+	execute(scene, sprite) {
+		sprite.detectionArea.x = sprite.x
+		sprite.detectionArea.y = sprite.y
 	}
  }
 
  class FollowPlayerState extends State {
+	private followEvent: Phaser.Time.TimerEvent
+
 	enter(scene, sprite) {
-	
+		//console.log(" "+scene.player.x)
+		this.followEvent = scene.time.addEvent({
+			delay: 200,
+			callback: () => {			
+				// Follow player if path end not reached
+				if (sprite.followPathIndex < sprite.followPath.length) {
+					sprite.x = sprite.followPath[sprite.followPathIndex].x*8
+					sprite.y = sprite.followPath[sprite.followPathIndex].y*8
+
+					sprite.followPathIndex++
+				}
+				else {	// Path end reached
+					sprite.followPathIndex = 0
+
+					//???
+					sprite.stateMachine.transition('idle')
+
+					this.followEvent.destroy()
+				}
+			},
+			loop: true
+		})
 	}
 	
 	execute(scene, sprite) {
-	 
 	}
  }
 
@@ -61,34 +148,19 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	private death_sound!: Phaser.Sound.BaseSound
 	private hurt_sound!: Phaser.Sound.BaseSound
 	private detected_sound!: Phaser.Sound.BaseSound
-
-	public dead: boolean = false
 	
 	private detectionArea!: Phaser.GameObjects.Arc
-	private detected_player: boolean = false
 	private detected_time: number = 0
 
-	private followPlayer: boolean = false
 	private followPath
 	private followPathIndex: number = 0
-	private followLastFollowTime: number = 0
 
 	private stateMachine!: StateMachine
 
 	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
 		super(scene, x * SCALE, y * SCALE, texture, frame)
 
-		this.anims.play('grunt-idle')
-
 		scene.physics.world.on(Phaser.Physics.Arcade.Events.TILE_COLLIDE, this.handleTileCollision, this)
-
-		this.moveEvent = scene.time.addEvent({
-			delay: 2000,
-			callback: () => {
-				this.direction = randomDirection(this.direction)
-			},
-			loop: true
-		})
 
 		this.setScale(SCALE)
 
@@ -105,11 +177,8 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 			idle: new IdleState(),
 			faint: new FaintState(),
 			follow: new FollowPlayerState(),
+			detected: new PlayerDetectedState(),
 		  }, [scene, this]);
-	}
-
-	isDead() {
-		return this.dead
 	}
 
 	getX() {
@@ -120,16 +189,15 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 		return this.y
 	}
 
+	getState() {
+		return this.stateMachine.state
+	}
+
 	moveTo(map: Phaser.Tilemaps.Tilemap, player: Player, path) {
 		// Sets up a list of tweens, one for each tile to walk, that will be chained by the timeline
 
-		this.followPlayer = true
 		this.followPath = path
 		this.followPathIndex = 0
-	}
-
-	isPlayerDetected() {
-		return this.detected_player
 	}
 
 	getDetectionArea() {
@@ -137,43 +205,16 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	handleDetection() {
-		if (this.dead)
-			return
-
-		if (this.followPlayer)
-			return
-
-		if (this.detected_player)
-			return
-
-		this.detected_player = true
-
-		this.detectionArea.setVisible(true)
-		this.anims.play('grunt-idle')
-		
-		if (!this.detected_sound.isPlaying)
-			this.detected_sound.play()
-		
-		this.setVelocity(0, 0)
+		if (this.stateMachine.state == 'idle')
+			this.stateMachine.transition('detected')
 	}
 
 	handleDamage() {
-		// tbd
 		this.hurt_sound.play()
 	}
 
 	handleDeath() {
-		this.dead = true
-		this.moveEvent.destroy()
-
-		this.death_sound.play()
-		this.anims.play('grunt-faint')
-
-		//this.detectionArea.destroy(true)
-		this.detectionArea.setVisible(false)
-
-		this.disableBody()
-		this.setVelocity(0, 0)
+		this.stateMachine.transition('faint')
 	}
 
 	destroy(fromScene?: boolean) {
@@ -191,74 +232,14 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 	preUpdate(t: number, dt: number) {
 		super.preUpdate(t, dt)
+	}
+
+	update() {
+		// Grunt dead?
+		if (this.stateMachine.state == 'faint')
+			return
 
 		// Update state machine
 		this.stateMachine.step()
-
-		// Grunt dead?
-		if (this.dead)
-			return
-
-		// Player detected?
-		if (this.detected_player) {
-			if (this.detected_time == 0)
-				this.detected_time = t
-			else if (t > (this.detected_time+1000)){
-				this.detected_time = 0
-				this.detected_player = false
-			}
-		}
-		else
-			this.detectionArea.setVisible(false)
-
-		// Following player?
-		if (this.followPlayer) {
-			if (this.followLastFollowTime == 0) {
-				// Follow player if path end not reached
-				if (this.followPathIndex < this.followPath.length) {
-					this.x = this.followPath[this.followPathIndex].x*8
-					this.y = this.followPath[this.followPathIndex].y*8
-
-					this.followPathIndex++
-					this.followLastFollowTime = t
-				}
-				else {	// Path end reached
-					this.followPlayer = false
-					this.followPathIndex = 0
-				}
-			}
-			else if (t > (this.followLastFollowTime+200)) {
-				this.followLastFollowTime = 0
-			}
-		}
-		// Moving grunt
-		else {
-			const speed = 15
-
-			switch (this.direction) {
-				case Direction.UP:
-					this.setVelocity(0, -speed)
-					break
-
-				case Direction.DOWN:
-					this.setVelocity(0, speed)
-					break
-
-				case Direction.LEFT:
-					this.setVelocity(-speed, 0)
-					this.scaleX = 1
-					this.body.offset.x = 0
-					break
-
-				case Direction.RIGHT:
-					this.setVelocity(speed, 0)
-					this.scaleX = -1
-					this.body.offset.x = 8
-					break
-			}
-		}
-
-		this.detectionArea.x = this.x
-		this.detectionArea.y = this.y
 	}
 }

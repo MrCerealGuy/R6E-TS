@@ -217,7 +217,7 @@ export default class MainScene extends Phaser.Scene {
 	private handleKnifeGruntCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
 		const grunt = obj2 as Grunt
 
-		if (!grunt.dead) grunt.handleDeath()
+		if (grunt.getState() != 'faint') grunt.handleDeath()
 
 		this.knives.killAndHide(obj1) // knives
 		//this.grunts.killAndHide(obj2) // grunts
@@ -226,7 +226,7 @@ export default class MainScene extends Phaser.Scene {
 	private handlePlayerGruntCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
 		const grunt = obj2 as Grunt
 
-		if (grunt.dead) return
+		if (grunt.getState() == 'faint') return
 
 		const dx = this.player.x - grunt.x
 		const dy = this.player.y - grunt.y
@@ -258,34 +258,38 @@ export default class MainScene extends Phaser.Scene {
 		this.grunts.children.each(child => {
 			const grunt = child as Grunt
 
-			if (!grunt.isDead() && !grunt.isPlayerDetected())
-			{
+			if (grunt.getState() == 'idle') {
 				var radius = grunt.getDetectionArea()?.radius
 				var dis = Phaser.Math.Distance.Between(player.x, player.y, grunt.x, grunt.y)
 
 				if (dis <= radius) {
 					grunt.handleDetection()
-
-					var toX = Math.floor(player.x/8)
-					var toY = Math.floor(player.y/8)
-					var fromX = Math.floor(grunt.getX()/8)
-					var fromY = Math.floor(grunt.getY()/8)
-
-					console.log('going from ('+fromX+','+fromY+') to ('+toX+','+toY+')')
-
-					// Find path
-					this.finder.findPath(fromX, fromY, toX, toY, function(path) {
-						if (path == null) {
-							console.log("Path was not found.")
-						}
-						else {
-							console.log(path)
-							grunt.moveTo(map, player, path)
-						}
-					})
-					this.finder.calculate()
 				}
 			}
+
+			if (grunt.getState() == 'detected') {
+				var toX = Math.floor(player.x/8)
+				var toY = Math.floor(player.y/8)
+				var fromX = Math.floor(grunt.getX()/8)
+				var fromY = Math.floor(grunt.getY()/8)
+
+				console.log('going from ('+fromX+','+fromY+') to ('+toX+','+toY+')')
+
+				// Find path
+				this.finder.findPath(fromX, fromY, toX, toY, function(path) {
+					if (path == null) {
+						console.log("Path was not found.")
+					}
+					else {
+						console.log(path)
+						grunt.moveTo(map, player, path)
+					}
+				})
+				this.finder.calculate()
+
+			}
+
+			grunt.update()
 		})
 	}
 }
