@@ -137,6 +137,7 @@ class IdleState extends State {
 		if (scene.player.isDead()) {
 			this.detectedEvent?.destroy()
 			sprite.stateMachine.transition('idle')
+
 			return
 		}
 
@@ -146,7 +147,6 @@ class IdleState extends State {
  }
 
  class FollowPlayerState extends State {
-	private updatePathEvent: Phaser.Time.TimerEvent
 	private updateFollowEvent: Phaser.Time.TimerEvent
 
 	updateFollowPath(scene, sprite) {
@@ -174,21 +174,11 @@ class IdleState extends State {
 	}
 
 	enter(scene, sprite) {
-		this.updatePathEvent = scene.time.addEvent({
-			delay: 200,
-			callback: () => {
-				this.updateFollowPath(scene, sprite)
-
-				this.updatePathEvent.destroy()
-			},
-			loop: false
-		})
 	}
 	
 	execute(scene, sprite) {
 		// Check if grunt is dead
 		if (sprite.isDead()) {
-			this.updatePathEvent?.destroy()
 			this.updateFollowEvent?.destroy()
 			sprite.stateMachine.transition('faint')
 
@@ -197,7 +187,6 @@ class IdleState extends State {
 
 		// Check if player is dead
 		if (scene.player.isDead()) {
-			this.updatePathEvent?.destroy()
 			this.updateFollowEvent?.destroy()
 			sprite.stateMachine.transition('idle')			
 
@@ -209,7 +198,6 @@ class IdleState extends State {
 		var dis = Phaser.Math.Distance.Between(scene.player.x, scene.player.y, sprite.x, sprite.y)
 
 		if (dis > radius) {
-			this.updatePathEvent?.destroy()
 			this.updateFollowEvent?.destroy()
 			sprite.stateMachine.transition('idle')
 
