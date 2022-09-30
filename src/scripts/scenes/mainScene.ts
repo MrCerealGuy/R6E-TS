@@ -258,7 +258,8 @@ export default class MainScene extends Phaser.Scene {
 		this.grunts.children.each(child => {
 			const grunt = child as Grunt
 
-			if (grunt.getState() == 'idle') {
+			// Player detected?
+			if (grunt.getState() == 'idle' && !player.isDead()) {
 				var radius = grunt.getDetectionArea()?.radius
 				var dis = Phaser.Math.Distance.Between(player.x, player.y, grunt.x, grunt.y)
 
@@ -267,6 +268,7 @@ export default class MainScene extends Phaser.Scene {
 				}
 			}
 
+			// Player detected, calculate path
 			if (grunt.getState() == 'detected') {
 				var toX = Math.floor(player.x/8)
 				var toY = Math.floor(player.y/8)

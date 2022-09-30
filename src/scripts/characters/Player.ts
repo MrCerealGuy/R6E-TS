@@ -39,6 +39,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		return this._health
 	}
 
+	isDead() {
+		if (this._health == 0)
+			return true
+		else
+			return false
+	}
+
 	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
 		super(scene, x * SCALE, y * SCALE, texture, frame)
 
