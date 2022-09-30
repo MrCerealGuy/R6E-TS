@@ -22,6 +22,7 @@ export default class MainScene extends Phaser.Scene {
 	private fpsText
 
 	private fov?: Mrpas
+	private fogColor = 0x101010
 
 	private map!: Phaser.Tilemaps.Tilemap
 	private groundLayer!: Phaser.Tilemaps.TilemapLayer
@@ -50,7 +51,7 @@ export default class MainScene extends Phaser.Scene {
 	preload() {
 		this.cursors = this.input.keyboard.createCursorKeys()
 
-		// load sfx
+		// Load sfx
 		this.load.audio('player-death-sound', ['assets/character/death.mp3'])
 
 		this.load.audio('player-hurt-sound', ['assets/character/hurt.mp3'])
@@ -85,7 +86,7 @@ export default class MainScene extends Phaser.Scene {
 
 		// Init FOV
 		this.initFOV()
-  
+
 		// Init knives
 		this.knives = this.physics.add.group({
 			classType: Phaser.Physics.Arcade.Image,
@@ -120,10 +121,10 @@ export default class MainScene extends Phaser.Scene {
 
 		var grid: number[][] = []
 
-		for (var y=0; y < map.height; y++) {
+		for (var y = 0; y < map.height; y++) {
 			var col: number[] = []
 
-			for (var x=0;x < map.width; x++) {
+			for (var x = 0; x < map.width; x++) {
 				var index = this.getTileID(x, y)
 
 				col.push(index)
@@ -132,14 +133,14 @@ export default class MainScene extends Phaser.Scene {
 			grid.push(col)
 		}
 
-		console.log("Grid: "+grid)
+		console.log("Grid: " + grid)
 		this.finder.setGrid(grid)
 
 		var tileset = map.tilesets[0]
-    	var properties = tileset.tileProperties
-    	var acceptableTiles: number [] = [-1]
+		var properties = tileset.tileProperties
+		var acceptableTiles: number[] = [-1]
 
-		console.log("AcceptableTiles: "+acceptableTiles)
+		console.log("AcceptableTiles: " + acceptableTiles)
 		this.finder.setAcceptableTiles(acceptableTiles)
 	}
 
@@ -190,15 +191,22 @@ export default class MainScene extends Phaser.Scene {
 
 	private initFOV() {
 		this.fov = new Mrpas(this.map.width, this.map.height, (x, y) => {
-			const tile = this.groundLayer!.getTileAt(x, y)
-			return tile && !tile.collides
+			const tile1 = this.groundLayer!.getTileAt(x, y)
+			const tile2 = this.wallsLayer!.getTileAt(x, y)
+
+			// Check if there is a wall
+			if (!tile2) {
+				// No wall, only ground. Return true.
+				return true
+			}
+
+			// A wall. True, if wall collides.
+			return tile2 && !tile2.collides
 		})
 	}
 
-	private computeFOV()
-	{
-		if (!this.fov || !this.map || !this.groundLayer || !this.player)
-		{
+	private computeFOV() {
+		if (!this.fov || !this.map || !this.groundLayer || !this.wallsLayer || !this.player) {
 			return
 		}
 
@@ -212,23 +220,27 @@ export default class MainScene extends Phaser.Scene {
 		)
 
 		// set all tiles within camera view to invisible
-		for (let y = bounds.y; y < bounds.y + bounds.height; y++)
-		{
-			for (let x = bounds.x; x < bounds.x + bounds.width; x++)
-			{
-				if (y < 0 || y >= this.map.height || x < 0 || x >= this.map.width)
-				{
+		for (let y = bounds.y; y < bounds.y + bounds.height; y++) {
+			for (let x = bounds.x; x < bounds.x + bounds.width; x++) {
+				if (y < 0 || y >= this.map.height || x < 0 || x >= this.map.width) {
 					continue
 				}
 
-				const tile = this.groundLayer.getTileAt(x, y)
-				if (!tile)
-				{
+				const tile1 = this.groundLayer.getTileAt(x, y)
+				if (!tile1) {
 					continue
 				}
 
-				tile.alpha = 1
-				tile.tint = 0x404040
+				tile1.alpha = 1
+				tile1.tint = this.fogColor
+
+				const tile2 = this.wallsLayer.getTileAt(x, y)
+				if (!tile2) {
+					continue
+				}
+
+				tile2.alpha = 1
+				tile2.tint = this.fogColor
 			}
 		}
 
@@ -236,32 +248,44 @@ export default class MainScene extends Phaser.Scene {
 		// get player's position
 		const px = this.map.worldToTileX(this.player.x)
 		const py = this.map.worldToTileY(this.player.y)
-		
+
 		// compute fov from player's position
 		this.fov.compute(
 			px,
 			py,
 			7,
 			(x, y) => {
-				const tile = this.groundLayer!.getTileAt(x, y)
-				if (!tile)
-				{
+				const tile1 = this.groundLayer!.getTileAt(x, y)
+				const tile2 = this.wallsLayer!.getTileAt(x, y)
+				if (!tile1) {
 					return false
 				}
-				return tile.tint === 0xffffff
+
+				if (!tile2) {
+					return tile1.tint === 0xffffff
+				}
+
+				return (tile1.tint === 0xffffff && tile2.tint === 0xffffff)
 			},
 			(x, y) => {
-				const tile = this.groundLayer!.getTileAt(x, y)
-				if (!tile)
-				{
-					return
-				}
-				
 				const d = Phaser.Math.Distance.Between(py, px, y, x)
 				const alpha = Math.min(2 - d / 6, 1)
 
-				tile.tint = 0xffffff
-				tile.alpha =  alpha
+				const tile1 = this.groundLayer!.getTileAt(x, y)
+				if (!tile1) {
+					return
+				}
+
+				tile1.tint = 0xffffff
+				tile1.alpha = alpha
+
+				const tile2 = this.wallsLayer!.getTileAt(x, y)
+				if (!tile2) {
+					return
+				}
+
+				tile2.tint = 0xffffff
+				tile2.alpha = alpha
 			}
 		)
 	}
@@ -276,7 +300,7 @@ export default class MainScene extends Phaser.Scene {
 		//this.physics.add.collider(this.player, chests, this.handlePlayerChestCollision, undefined, this)
 
 		this.physics.add.collider(this.knives, this.wallsLayer, this.handleKnifeWallCollision, undefined, this)
-		
+
 		this.physics.add.collider(this.knives, this.grunts, this.handleKnifeGruntCollision, undefined, this)
 
 		this.playerGruntsCollider = this.physics.add.collider(
@@ -285,7 +309,7 @@ export default class MainScene extends Phaser.Scene {
 			this.handlePlayerGruntCollision,
 			undefined,
 			this
-		)		
+		)
 	}
 
 	private handlePlayerChestCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {

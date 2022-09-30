@@ -36,12 +36,12 @@ class IdleState extends State {
 			loop: true
 		})
 	}
-	
+
 	execute(scene, sprite) {
 		// Check if grunt is dead
 		if (sprite.isDead()) {
 			sprite.stateMachine.transition('faint')
-		
+
 			return
 		}
 
@@ -81,9 +81,9 @@ class IdleState extends State {
 				break
 		}
 	}
- }
+}
 
- class FaintState extends State {
+class FaintState extends State {
 	enter(scene, sprite) {
 		sprite.moveEvent.destroy()
 
@@ -95,21 +95,21 @@ class IdleState extends State {
 		sprite.disableBody()
 		sprite.setVelocity(0, 0)
 	}
-	
+
 	execute(scene, sprite) {
 	}
- }
+}
 
- class PlayerDetectedState extends State {
+class PlayerDetectedState extends State {
 	private detectedEvent: Phaser.Time.TimerEvent
 
 	enter(scene, sprite) {
 		sprite.detectionArea.setVisible(true)
 		sprite.anims.play('grunt-idle')
-		
+
 		if (!sprite.detected_sound.isPlaying)
 			sprite.detected_sound.play()
-		
+
 		sprite.setVelocity(0, 0)
 
 		this.detectedEvent = scene.time.addEvent({
@@ -123,7 +123,7 @@ class IdleState extends State {
 			loop: false
 		})
 	}
-	
+
 	execute(scene, sprite) {
 		// Check if grunt is dead
 		if (sprite.isDead()) {
@@ -144,21 +144,21 @@ class IdleState extends State {
 		sprite.detectionArea.x = sprite.x
 		sprite.detectionArea.y = sprite.y
 	}
- }
+}
 
- class FollowPlayerState extends State {
+class FollowPlayerState extends State {
 	private updateFollowEvent: Phaser.Time.TimerEvent
 
 	updateFollowPath(scene, sprite) {
-		var toX = Math.floor(scene.player.x/8)
-		var toY = Math.floor(scene.player.y/8)
-		var fromX = Math.floor(sprite.getX()/8)
-		var fromY = Math.floor(sprite.getY()/8)
+		var toX = Math.floor(scene.player.x / 8)
+		var toY = Math.floor(scene.player.y / 8)
+		var fromX = Math.floor(sprite.getX() / 8)
+		var fromY = Math.floor(sprite.getY() / 8)
 
-		console.log('going from ('+fromX+','+fromY+') to ('+toX+','+toY+')')
+		console.log('going from (' + fromX + ',' + fromY + ') to (' + toX + ',' + toY + ')')
 
 		// Find path
-		scene.finder.findPath(fromX, fromY, toX, toY, function(path) {
+		scene.finder.findPath(fromX, fromY, toX, toY, function (path) {
 			if (path == null) {
 				console.log("Path was not found.")
 
@@ -169,13 +169,13 @@ class IdleState extends State {
 				console.log(path)
 			}
 		})
-		
+
 		scene.finder.calculate()
 	}
 
 	enter(scene, sprite) {
 	}
-	
+
 	execute(scene, sprite) {
 		// Check if grunt is dead
 		if (sprite.isDead()) {
@@ -188,7 +188,7 @@ class IdleState extends State {
 		// Check if player is dead
 		if (scene.player.isDead()) {
 			this.updateFollowEvent?.destroy()
-			sprite.stateMachine.transition('idle')			
+			sprite.stateMachine.transition('idle')
 
 			return
 		}
@@ -217,18 +217,18 @@ class IdleState extends State {
 			delay: 200,
 			callback: () => {
 
-			if (sprite.followPath?.length >= 2) {
-					sprite.x = sprite.followPath[1]?.x*8
-					sprite.y = sprite.followPath[1]?.y*8
+				if (sprite.followPath?.length >= 2) {
+					sprite.x = sprite.followPath[1]?.x * 8
+					sprite.y = sprite.followPath[1]?.y * 8
 
 					this.updateFollowEvent.destroy()
 				}
 			},
 			loop: false
 		})
-		
+
 	}
- }
+}
 
 export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	private direction = Direction.RIGHT
@@ -237,7 +237,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	private death_sound!: Phaser.Sound.BaseSound
 	private hurt_sound!: Phaser.Sound.BaseSound
 	private detected_sound!: Phaser.Sound.BaseSound
-	
+
 	private detectionArea!: Phaser.GameObjects.Arc
 
 	private followPath
@@ -258,7 +258,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 		this.hurt_sound = scene.sound.add('grunt-hurt-sound', { volume: 0.2, loop: false })
 		this.detected_sound = scene.sound.add('grunt-detected-sound', { volume: 0.2, loop: false })
 
-		this.detectionArea = scene.add.circle(x * SCALE,y * SCALE, detectionRadius)
+		this.detectionArea = scene.add.circle(x * SCALE, y * SCALE, detectionRadius)
 		this.detectionArea.setStrokeStyle(1, 0xff0000)
 		this.detectionArea.setVisible(false)
 
@@ -268,7 +268,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 			faint: new FaintState(),
 			follow: new FollowPlayerState(),
 			detected: new PlayerDetectedState(),
-		  }, [scene, this]);
+		}, [scene, this]);
 	}
 
 	isDead() {
