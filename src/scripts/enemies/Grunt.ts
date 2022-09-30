@@ -38,6 +38,17 @@ class IdleState extends State {
 	}
 	
 	execute(scene, sprite) {
+
+		if (!scene.player.isDead()) {
+			var radius = sprite.getDetectionArea()?.radius
+			var dis = Phaser.Math.Distance.Between(scene.player.x, scene.player.y, sprite.x, sprite.y)
+
+			if (dis <= radius) {
+				sprite.stateMachine.transition('detected')
+				return
+			}
+		}
+
 		const speed = 15
 
 		switch (sprite.direction) {
@@ -98,46 +109,104 @@ class IdleState extends State {
 			callback: () => {
 				sprite.detectionArea.setVisible(false)
 				sprite.stateMachine.transition('follow')
+
+				this.detectedEvent.destroy()
 			},
 			loop: false
 		})
 	}
 	
 	execute(scene, sprite) {
+		if (scene.player.isDead()) {
+			sprite.stateMachine.transition('idle')
+			return
+		}
+
 		sprite.detectionArea.x = sprite.x
 		sprite.detectionArea.y = sprite.y
 	}
  }
 
  class FollowPlayerState extends State {
-	private followEvent: Phaser.Time.TimerEvent
+	private updatePathEvent: Phaser.Time.TimerEvent
+	private updateFollowEvent: Phaser.Time.TimerEvent
+
+	updateFollowPath(scene, sprite) {
+		var toX = Math.floor(scene.player.x/8)
+				var toY = Math.floor(scene.player.y/8)
+				var fromX = Math.floor(sprite.getX()/8)
+				var fromY = Math.floor(sprite.getY()/8)
+
+				console.log('going from ('+fromX+','+fromY+') to ('+toX+','+toY+')')
+
+				// Find path
+				scene.finder.findPath(fromX, fromY, toX, toY, function(path) {
+					if (path == null) {
+						console.log("Path was not found.")
+
+						sprite.stateMachine.transition('idle')
+					}
+					else {
+						sprite.followPath = path
+						console.log(path)
+					}
+				})
+
+				scene.finder.calculate()
+	}
 
 	enter(scene, sprite) {
-		//console.log(" "+scene.player.x)
-		this.followEvent = scene.time.addEvent({
+		this.updatePathEvent = scene.time.addEvent({
 			delay: 200,
-			callback: () => {			
-				// Follow player if path end not reached
-				if (sprite.followPathIndex < sprite.followPath.length) {
-					sprite.x = sprite.followPath[sprite.followPathIndex].x*8
-					sprite.y = sprite.followPath[sprite.followPathIndex].y*8
-
-					sprite.followPathIndex++
-				}
-				else {	// Path end reached
-					sprite.followPathIndex = 0
-
-					//???
-					sprite.stateMachine.transition('idle')
-
-					this.followEvent.destroy()
-				}
+			callback: () => {
+				this.updateFollowPath(scene, sprite)
 			},
 			loop: true
 		})
 	}
 	
 	execute(scene, sprite) {
+		// Check if player is dead
+		if (scene.player.isDead()) {
+			this.updatePathEvent?.destroy()
+			this.updateFollowEvent?.destroy()
+			sprite.stateMachine.transition('idle')			
+
+			return
+		}
+
+		// Check if player lost
+		var radius = sprite.getDetectionArea()?.radius
+		var dis = Phaser.Math.Distance.Between(scene.player.x, scene.player.y, sprite.x, sprite.y)
+
+		if (dis > radius) {
+			this.updatePathEvent?.destroy()
+			this.updateFollowEvent?.destroy()
+			sprite.stateMachine.transition('idle')
+
+			return
+		}
+
+		// Check if follow event is going on
+		if (this.updateFollowEvent?.getRemainingSeconds() > 0) {
+			return
+		}
+
+		// Make new follow step
+		this.updateFollowEvent = scene.time.addEvent({
+			delay: 200,
+			callback: () => {
+
+			if (sprite.followPath?.length >= 2) {
+					sprite.x = sprite.followPath[1]?.x*8
+					sprite.y = sprite.followPath[1]?.y*8
+
+					this.updateFollowEvent.destroy()
+				}
+			},
+			loop: false
+		})
+		
 	}
  }
 
@@ -150,7 +219,6 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	private detected_sound!: Phaser.Sound.BaseSound
 	
 	private detectionArea!: Phaser.GameObjects.Arc
-	private detected_time: number = 0
 
 	private followPath
 	private followPathIndex: number = 0
@@ -193,7 +261,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 		return this.stateMachine.state
 	}
 
-	moveTo(map: Phaser.Tilemaps.Tilemap, player: Player, path) {
+	updatePath(map: Phaser.Tilemaps.Tilemap, player: Player, path) {
 		// Sets up a list of tweens, one for each tile to walk, that will be chained by the timeline
 
 		this.followPath = path
@@ -202,11 +270,6 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 	getDetectionArea() {
 		return this.detectionArea
-	}
-
-	handleDetection() {
-		if (this.stateMachine.state == 'idle')
-			this.stateMachine.transition('detected')
 	}
 
 	handleDamage() {
