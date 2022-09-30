@@ -16,9 +16,12 @@ import { Game } from 'phaser'
 
 import { SCALE } from '../utils/globals'
 import { EasyStar } from '../libs/easystar'
+import { Mrpas } from 'mrpas'
 
 export default class MainScene extends Phaser.Scene {
 	private fpsText
+
+	private fov?: Mrpas
 
 	private map!: Phaser.Tilemaps.Tilemap
 	private groundLayer!: Phaser.Tilemaps.TilemapLayer
@@ -79,6 +82,9 @@ export default class MainScene extends Phaser.Scene {
 
 		// Init tilemap layers
 		this.initTilemapLayers(this.map, tileset)
+
+		// Init FOV
+		this.initFOV()
   
 		// Init knives
 		this.knives = this.physics.add.group({
@@ -182,6 +188,84 @@ export default class MainScene extends Phaser.Scene {
 			})*/
 	}
 
+	private initFOV() {
+		this.fov = new Mrpas(this.map.width, this.map.height, (x, y) => {
+			const tile = this.groundLayer!.getTileAt(x, y)
+			return tile && !tile.collides
+		})
+	}
+
+	private computeFOV()
+	{
+		if (!this.fov || !this.map || !this.groundLayer || !this.player)
+		{
+			return
+		}
+
+		// get camera view bounds
+		const camera = this.cameras.main
+		const bounds = new Phaser.Geom.Rectangle(
+			this.map.worldToTileX(camera.worldView.x) - 1,
+			this.map.worldToTileY(camera.worldView.y) - 1,
+			this.map.worldToTileX(camera.worldView.width) + 2,
+			this.map.worldToTileX(camera.worldView.height) + 3
+		)
+
+		// set all tiles within camera view to invisible
+		for (let y = bounds.y; y < bounds.y + bounds.height; y++)
+		{
+			for (let x = bounds.x; x < bounds.x + bounds.width; x++)
+			{
+				if (y < 0 || y >= this.map.height || x < 0 || x >= this.map.width)
+				{
+					continue
+				}
+
+				const tile = this.groundLayer.getTileAt(x, y)
+				if (!tile)
+				{
+					continue
+				}
+
+				tile.alpha = 1
+				tile.tint = 0x404040
+			}
+		}
+
+		// calculate fov here...
+		// get player's position
+		const px = this.map.worldToTileX(this.player.x)
+		const py = this.map.worldToTileY(this.player.y)
+		
+		// compute fov from player's position
+		this.fov.compute(
+			px,
+			py,
+			7,
+			(x, y) => {
+				const tile = this.groundLayer!.getTileAt(x, y)
+				if (!tile)
+				{
+					return false
+				}
+				return tile.tint === 0xffffff
+			},
+			(x, y) => {
+				const tile = this.groundLayer!.getTileAt(x, y)
+				if (!tile)
+				{
+					return
+				}
+				
+				const d = Phaser.Math.Distance.Between(py, px, y, x)
+				const alpha = Math.min(2 - d / 6, 1)
+
+				tile.tint = 0xffffff
+				tile.alpha =  alpha
+			}
+		)
+	}
+
 	private initColliders() {
 		this.physics.add.collider(this.player, this.groundLayer)
 		this.physics.add.collider(this.grunts, this.groundLayer)
@@ -260,5 +344,8 @@ export default class MainScene extends Phaser.Scene {
 
 			grunt.update()
 		})
+
+		// Compute FOV
+		this.computeFOV()
 	}
 }

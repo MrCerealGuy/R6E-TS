@@ -326,7 +326,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 	update() {
 		// Grunt dead?
-		if (this.stateMachine.state == 'faint')
+		if (this._dead)
 			return
 
 		// Update state machine

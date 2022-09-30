@@ -14,6 +14,9 @@ $ cd R6E-TS
 # Install dependencies
 $ npm install
 
+# Install MRPAS
+$ npm install mrpas
+
 # Start the local development server (on port 8080)
 $ npm start
 
@@ -31,7 +34,13 @@ Phaser 3 TypeScript Starter Template
 https://github.com/yandeu/phaser-project-template
 
 Dungeon Crawler Starter
-https://github.com/ourcade/phaser3-dungeon-crawler-starte
+https://github.com/ourcade/phaser3-dungeon-crawler-starter
+
+Finite State Machine (FSM)
+https://www.mkelly.me/blog/phaser-finite-state-machine/
+
+FOV MRPAS algorithm
+https://blog.ourcade.co/posts/2020/phaser3-mrpas-fov-field-of-view-algorithm-roguelike-dungeon-crawler/
 
 ### Tile sets
 
