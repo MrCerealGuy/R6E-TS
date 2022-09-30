@@ -217,7 +217,7 @@ export default class MainScene extends Phaser.Scene {
 	private handleKnifeGruntCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
 		const grunt = obj2 as Grunt
 
-		if (grunt.getState() != 'faint') grunt.handleDeath()
+		if (!grunt.isDead()) grunt.handleDeath()
 
 		this.knives.killAndHide(obj1) // knives
 		//this.grunts.killAndHide(obj2) // grunts
@@ -226,7 +226,7 @@ export default class MainScene extends Phaser.Scene {
 	private handlePlayerGruntCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
 		const grunt = obj2 as Grunt
 
-		if (grunt.getState() == 'faint' || this.player.isDead()) return
+		if (grunt.isDead() || this.player.isDead()) return
 
 		const dx = this.player.x - grunt.x
 		const dy = this.player.y - grunt.y

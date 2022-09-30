@@ -38,7 +38,14 @@ class IdleState extends State {
 	}
 	
 	execute(scene, sprite) {
+		// Check if grunt is dead
+		if (sprite.isDead()) {
+			sprite.stateMachine.transition('faint')
+		
+			return
+		}
 
+		// Detected player?
 		if (!scene.player.isDead()) {
 			var radius = sprite.getDetectionArea()?.radius
 			var dis = Phaser.Math.Distance.Between(scene.player.x, scene.player.y, sprite.x, sprite.y)
@@ -49,6 +56,7 @@ class IdleState extends State {
 			}
 		}
 
+		// Walk around
 		const speed = 15
 
 		switch (sprite.direction) {
@@ -117,7 +125,17 @@ class IdleState extends State {
 	}
 	
 	execute(scene, sprite) {
+		// Check if grunt is dead
+		if (sprite.isDead()) {
+			this.detectedEvent?.destroy()
+			sprite.stateMachine.transition('faint')
+
+			return
+		}
+
+		// Check if player is dead
 		if (scene.player.isDead()) {
+			this.detectedEvent?.destroy()
 			sprite.stateMachine.transition('idle')
 			return
 		}
@@ -133,26 +151,26 @@ class IdleState extends State {
 
 	updateFollowPath(scene, sprite) {
 		var toX = Math.floor(scene.player.x/8)
-				var toY = Math.floor(scene.player.y/8)
-				var fromX = Math.floor(sprite.getX()/8)
-				var fromY = Math.floor(sprite.getY()/8)
+		var toY = Math.floor(scene.player.y/8)
+		var fromX = Math.floor(sprite.getX()/8)
+		var fromY = Math.floor(sprite.getY()/8)
 
-				console.log('going from ('+fromX+','+fromY+') to ('+toX+','+toY+')')
+		console.log('going from ('+fromX+','+fromY+') to ('+toX+','+toY+')')
 
-				// Find path
-				scene.finder.findPath(fromX, fromY, toX, toY, function(path) {
-					if (path == null) {
-						console.log("Path was not found.")
+		// Find path
+		scene.finder.findPath(fromX, fromY, toX, toY, function(path) {
+			if (path == null) {
+				console.log("Path was not found.")
 
-						sprite.stateMachine.transition('idle')
-					}
-					else {
-						sprite.followPath = path
-						console.log(path)
-					}
-				})
-
-				scene.finder.calculate()
+				sprite.stateMachine.transition('idle')
+			}
+			else {
+				sprite.followPath = path
+				console.log(path)
+			}
+		})
+		
+		scene.finder.calculate()
 	}
 
 	enter(scene, sprite) {
@@ -160,12 +178,23 @@ class IdleState extends State {
 			delay: 200,
 			callback: () => {
 				this.updateFollowPath(scene, sprite)
+
+				this.updatePathEvent.destroy()
 			},
-			loop: true
+			loop: false
 		})
 	}
 	
 	execute(scene, sprite) {
+		// Check if grunt is dead
+		if (sprite.isDead()) {
+			this.updatePathEvent?.destroy()
+			this.updateFollowEvent?.destroy()
+			sprite.stateMachine.transition('faint')
+
+			return
+		}
+
 		// Check if player is dead
 		if (scene.player.isDead()) {
 			this.updatePathEvent?.destroy()
@@ -191,6 +220,9 @@ class IdleState extends State {
 		if (this.updateFollowEvent?.getRemainingSeconds() > 0) {
 			return
 		}
+
+		// Calculate new path
+		this.updateFollowPath(scene, sprite)
 
 		// Make new follow step
 		this.updateFollowEvent = scene.time.addEvent({
@@ -225,6 +257,8 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 	private stateMachine!: StateMachine
 
+	private _dead: boolean = false
+
 	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
 		super(scene, x * SCALE, y * SCALE, texture, frame)
 
@@ -247,6 +281,10 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 			follow: new FollowPlayerState(),
 			detected: new PlayerDetectedState(),
 		  }, [scene, this]);
+	}
+
+	isDead() {
+		return this._dead
 	}
 
 	getX() {
@@ -277,6 +315,7 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	handleDeath() {
+		this._dead = true
 		this.stateMachine.transition('faint')
 	}
 
