@@ -17,31 +17,7 @@ import { Game } from 'phaser'
 import { SCALE, RANDOM_DUNGEONS, DSCALE } from '../utils/globals'
 import { EasyStar } from '../libs/easystar'
 import { Mrpas } from 'mrpas'
-
-import Dungeon from  '../libs/dungeon-generator/src/generators/dungeon';
-
-let dungeon = new Dungeon({
-    "size": [100, 100],
-    "rooms": {
-        "initial": {
-            "min_size": [3, 3],
-            "max_size": [9, 9],
-            "max_exits": 1
-        },
-        "any": {
-            "min_size": [5, 5],
-            "max_size": [10, 10],
-            "max_exits": 4
-        }
-    },
-    "max_corridor_length": 6,
-    "min_corridor_length": 2,
-    "corridor_density": 0.5,
-    "symmetric_rooms": false,
-    "interconnects": 1,
-    "max_interconnect_length": 10,
-    "room_count": 20
-});
+import RandomDungeon from '../dungeon/dungeon'
 
 export default class MainScene extends Phaser.Scene {
 	private fpsText
@@ -53,6 +29,8 @@ export default class MainScene extends Phaser.Scene {
 	private groundLayer!: Phaser.Tilemaps.TilemapLayer
 	private wallsLayer!: Phaser.Tilemaps.TilemapLayer
 	private gruntsLayer!: Phaser.Tilemaps.ObjectLayer
+
+	private dungeon!: RandomDungeon
 
 	private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
 	private player!: Player
@@ -110,8 +88,16 @@ export default class MainScene extends Phaser.Scene {
 			this.initTilemapLayers(this.map, tileset)
 
 		// Generate random dungeon
-		if (RANDOM_DUNGEONS)
-			tileset = this.generateDungeon()
+		if (RANDOM_DUNGEONS) {
+			this.map.destroy()
+			this.dungeon = new RandomDungeon(this)
+			this.dungeon.generateDungeon()
+
+			this.map = this.dungeon.getMap()
+			this.wallsLayer = this.dungeon.getWallsLayer()
+			this.groundLayer = this.dungeon.getGroundLayer()
+			tileset = this.dungeon.getTileset()
+		}
 
 		// Init FOV
 		this.initFOV()
@@ -129,76 +115,6 @@ export default class MainScene extends Phaser.Scene {
 		this.initEasyStar(this.map, tileset)
 	}
 
-	private generateDungeon() {
-		dungeon.generate();
-		dungeon.print();
-
-		//const DSCALE = 3
-
-		let [width, height] = dungeon.size
-		console.log("Dungeon width/height: "+width+"/"+height)
-
-		this.map.destroy()
-
-		this.map = this.make.tilemap({
-			tileWidth: 8, tileHeight: 8, 
-			width: width*DSCALE, height: height*DSCALE
-		})
-
-		var tileset = this.map.addTilesetImage('tiles', undefined, 8, 8, 0, 0)
-		this.groundLayer = this.map.createBlankLayer('Ground', tileset)
-		this.wallsLayer = this.map.createBlankLayer('Walls', tileset)
-
-		this.wallsLayer.setCollisionByProperty({ collides: true })
-
-		for (var y = 0; y < height; y++) {
-			
-			for (var dy = 0; dy < DSCALE; dy++) {
-				
-				for (var x = 0; x < width; x++) {
-					let wall = dungeon.walls.get([x,y])	// true, if wall
-
-					for (var dx = 0; dx < DSCALE; dx++) {
-						if (wall) {	// wall, id = 1
-							this.wallsLayer.putTileAt(2, DSCALE*x+dx, DSCALE*y+dy, false).setCollision(true, true, true, true)
-						}
-						else {	// floor, id = 15
-							this.groundLayer.putTileAt(16, DSCALE*x+dx, DSCALE*y+dy, false)
-						}
-					}
-				}
-			}
-		}
-
-		return tileset
-	}
-
-	private transformGrid2TileCoordinates(grid_x: number, grid_y: number)	{
-		let [width, height] = dungeon.size
-
-		for (var y = 0; y < height; y++) {
-			
-			for (var dy = 0; dy < DSCALE; dy++) {
-				
-				for (var x = 0; x < width; x++) {
-					let wall = dungeon.walls.get([x,y])	// true, if wall
-
-					for (var dx = 0; dx < DSCALE; dx++) {
-						
-						if (x == grid_x && y == grid_y)
-							return [DSCALE*x+dx, DSCALE*y+dy]
-					}
-				}
-			}
-		}
-
-		return [0, 0]
-	}
-
-	private transformTileCoordinates2ScreenXY(tile_x: number, tile_y: number) {
-		return [tile_x*8*SCALE,tile_y*8*SCALE]
-	}
-
 	private initPlayer() {
 		// Init knives
 		this.knives = this.physics.add.group({
@@ -210,11 +126,7 @@ export default class MainScene extends Phaser.Scene {
 
 		// Init player
 		if (RANDOM_DUNGEONS) {
-			let [tile_x,tile_y] = this.transformGrid2TileCoordinates(dungeon.start_pos[0], dungeon.start_pos[1])
-			console.log("Player tile pos: x="+tile_x+", y="+tile_y)
-			let [screen_x,screen_y] = this.transformTileCoordinates2ScreenXY(tile_x, tile_y)
-			console.log("Player screen pos: x="+screen_x+", y="+screen_y)
-			this.player = this.add.player(screen_x, screen_y, 'player')
+			this.player = this.add.player(this.dungeon.getPlayerStartPosScreenXY()[0], this.dungeon.getPlayerStartPosScreenXY()[1], 'player')
 		}
 		else
 			this.player = this.add.player(64 * SCALE, 32 * SCALE, 'player')
