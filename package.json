@@ -40,7 +40,8 @@
   "license": "MIT",
   "dependencies": {
     "mrpas": "^2.0.0",
-    "phaser": "^3.55.2"
+    "phaser": "^3.55.2",
+    "random-seed": "^0.3.0"
   },
   "devDependencies": {
     "@yandeu/prettier-config": "^0.0.3",

@@ -17,6 +17,9 @@ $ npm install
 # Install MRPAS
 $ npm install mrpas
 
+# Used for libs/dungeon-generator
+npm install random-seed
+
 # Start the local development server (on port 8080)
 $ npm start
 

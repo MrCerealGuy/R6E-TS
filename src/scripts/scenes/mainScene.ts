@@ -18,6 +18,31 @@ import { SCALE } from '../utils/globals'
 import { EasyStar } from '../libs/easystar'
 import { Mrpas } from 'mrpas'
 
+import Dungeon from  '../libs/dungeon-generator/src/generators/dungeon';
+
+let dungeon = new Dungeon({
+    "size": [100, 100],
+    "rooms": {
+        "initial": {
+            "min_size": [3, 3],
+            "max_size": [3, 3],
+            "max_exits": 1
+        },
+        "any": {
+            "min_size": [2, 2],
+            "max_size": [5, 5],
+            "max_exits": 4
+        }
+    },
+    "max_corridor_length": 6,
+    "min_corridor_length": 2,
+    "corridor_density": 0.5,
+    "symmetric_rooms": false,
+    "interconnects": 1,
+    "max_interconnect_length": 10,
+    "room_count": 20
+});
+
 export default class MainScene extends Phaser.Scene {
 	private fpsText
 
@@ -38,7 +63,6 @@ export default class MainScene extends Phaser.Scene {
 	private grunts!: Phaser.Physics.Arcade.Group
 	private playerGruntsCollider?: Phaser.Physics.Arcade.Collider
 	private finder
-
 
 	constructor() {
 		super({ key: 'MainScene' })
@@ -84,9 +108,31 @@ export default class MainScene extends Phaser.Scene {
 		// Init tilemap layers
 		this.initTilemapLayers(this.map, tileset)
 
+		// Generate random dungeon
+		this.generateDungeon()
+
 		// Init FOV
 		this.initFOV()
 
+		// Init player
+		this.initPlayer()
+
+		// Init grunts
+		this.initGrunts(this.map)
+
+		// Init colliders
+		this.initColliders()
+
+		// Init EasyStar
+		this.initEasyStar(this.map, tileset)
+	}
+
+	private generateDungeon() {
+		dungeon.generate();
+		dungeon.print();
+	}
+
+	private initPlayer() {
 		// Init knives
 		this.knives = this.physics.add.group({
 			classType: Phaser.Physics.Arcade.Image,
@@ -100,15 +146,6 @@ export default class MainScene extends Phaser.Scene {
 		this.player.setKnives(this.knives)
 
 		this.cameras.main.startFollow(this.player, true)
-
-		// Init grunts
-		this.initGrunts(this.map)
-
-		// Init colliders
-		this.initColliders()
-
-		// Init EasyStar
-		this.initEasyStar(this.map, tileset)
 	}
 
 	private initEasyStar(map: Phaser.Tilemaps.Tilemap, tiles: Phaser.Tilemaps.Tileset) {
