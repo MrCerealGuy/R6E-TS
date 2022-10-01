@@ -14,7 +14,7 @@ import { sceneEvents } from '../events/EventsCenter'
 import Chest from '../items/Chest'
 import { Game } from 'phaser'
 
-import { SCALE } from '../utils/globals'
+import { SCALE, RANDOM_DUNGEONS } from '../utils/globals'
 import { EasyStar } from '../libs/easystar'
 import { Mrpas } from 'mrpas'
 
@@ -25,12 +25,12 @@ let dungeon = new Dungeon({
     "rooms": {
         "initial": {
             "min_size": [3, 3],
-            "max_size": [3, 3],
+            "max_size": [9, 9],
             "max_exits": 1
         },
         "any": {
-            "min_size": [2, 2],
-            "max_size": [5, 5],
+            "min_size": [5, 5],
+            "max_size": [10, 10],
             "max_exits": 4
         }
     },
@@ -103,13 +103,15 @@ export default class MainScene extends Phaser.Scene {
 
 		// Init map and tileset
 		this.map = this.make.tilemap({ key: 'tileset1' })
-		const tileset = this.map.addTilesetImage('tileset1', 'tiles', 8, 8)
+		var tileset = this.map.addTilesetImage('tileset1', 'tiles', 8, 8)
 
 		// Init tilemap layers
-		this.initTilemapLayers(this.map, tileset)
+		if (!RANDOM_DUNGEONS)
+			this.initTilemapLayers(this.map, tileset)
 
 		// Generate random dungeon
-		this.generateDungeon()
+		if (RANDOM_DUNGEONS)
+			tileset = this.generateDungeon()
 
 		// Init FOV
 		this.initFOV()
@@ -130,6 +132,45 @@ export default class MainScene extends Phaser.Scene {
 	private generateDungeon() {
 		dungeon.generate();
 		dungeon.print();
+
+		const DSCALE = 3
+
+		let [width, height] = dungeon.size
+		console.log("Dungeon width/height: "+width+"/"+height)
+
+		this.map.destroy()
+
+		this.map = this.make.tilemap({
+			tileWidth: 8, tileHeight: 8, 
+			width: width*DSCALE, height: height*DSCALE
+		})
+
+		var tileset = this.map.addTilesetImage('tiles', undefined, 8, 8, 0, 0)
+		this.groundLayer = this.map.createBlankLayer('Ground', tileset)
+		this.wallsLayer = this.map.createBlankLayer('Walls', tileset)
+
+		this.wallsLayer.setCollisionByProperty({ collides: true })
+
+		for (var y = 0; y < height; y++) {
+			
+			for (var dy = 0; dy < DSCALE; dy++) {
+				
+				for (var x = 0; x < width; x++) {
+					let wall = dungeon.walls.get([x,y])	// true, if wall
+
+					for (var dx = 0; dx < DSCALE; dx++) {
+						if (wall) {	// wall, id = 1
+							this.wallsLayer.putTileAt(2, DSCALE*x+dx, DSCALE*y+dy, false).setCollision(true, true, true, true)
+						}
+						else {	// floor, id = 15
+							this.groundLayer.putTileAt(16, DSCALE*x+dx, DSCALE*y+dy, false)
+						}
+					}
+				}
+			}
+		}
+
+		return tileset
 	}
 
 	private initPlayer() {
@@ -183,7 +224,7 @@ export default class MainScene extends Phaser.Scene {
 
 	private getTileID(x: number, y: number) {
 		var tile = this.wallsLayer.getTileAt(x, y, true)
-		return tile.index	// -1 = no wall tile
+		return tile?.index	// -1 = no wall tile
 	}
 
 	private initGrunts(map: Phaser.Tilemaps.Tilemap) {
@@ -199,7 +240,7 @@ export default class MainScene extends Phaser.Scene {
 		this.gruntsLayer = map.getObjectLayer('Grunts')
 
 		// Create grunts from layer
-		this.gruntsLayer.objects.forEach(gruntObj => {
+		this.gruntsLayer?.objects.forEach(gruntObj => {
 			this.grunts.get(gruntObj.x! + gruntObj.width! * 0.5, gruntObj.y! - gruntObj.height! * 0.5, 'grunt')
 		})
 	}
