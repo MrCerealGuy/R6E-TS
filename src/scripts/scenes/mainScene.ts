@@ -14,16 +14,15 @@ import { sceneEvents } from '../events/EventsCenter'
 import Chest from '../items/Chest'
 import { Game } from 'phaser'
 
-import { SCALE, RANDOM_DUNGEONS, DSCALE } from '../utils/globals'
+import { SCALE, RANDOM_DUNGEONS } from '../utils/globals'
 import { EasyStar } from '../libs/easystar'
-import { Mrpas } from 'mrpas'
 import RandomDungeon from '../dungeon/dungeon'
+import FOV from '../dungeon/fov'
 
 export default class MainScene extends Phaser.Scene {
 	private fpsText
 
-	private fov?: Mrpas
-	private fogColor = 0x101010
+	private fov!: FOV
 
 	private map!: Phaser.Tilemaps.Tilemap
 	private groundLayer!: Phaser.Tilemaps.TilemapLayer
@@ -99,9 +98,6 @@ export default class MainScene extends Phaser.Scene {
 			tileset = this.dungeon.getTileset()
 		}
 
-		// Init FOV
-		this.initFOV()
-
 		// Init player
 		this.initPlayer()
 
@@ -110,6 +106,10 @@ export default class MainScene extends Phaser.Scene {
 
 		// Init colliders
 		this.initColliders()
+
+		// Init FOV
+		this.fov = new FOV(this, this.map, this.groundLayer, this.wallsLayer, this.player)
+		this.fov.initFOV()
 
 		// Init EasyStar
 		this.initEasyStar(this.map, tileset)
@@ -214,106 +214,7 @@ export default class MainScene extends Phaser.Scene {
 			})*/
 	}
 
-	private initFOV() {
-		this.fov = new Mrpas(this.map.width, this.map.height, (x, y) => {
-			const tile1 = this.groundLayer!.getTileAt(x, y)
-			const tile2 = this.wallsLayer!.getTileAt(x, y)
-
-			// Check if there is a wall
-			if (!tile2) {
-				// No wall, only ground. Return true.
-				return true
-			}
-
-			// A wall. True, if wall collides.
-			return tile2 && !tile2.collides
-		})
-	}
-
-	private computeFOV() {
-		if (!this.fov || !this.map || !this.groundLayer || !this.wallsLayer || !this.player) {
-			return
-		}
-
-		// get camera view bounds
-		const camera = this.cameras.main
-		const bounds = new Phaser.Geom.Rectangle(
-			this.map.worldToTileX(camera.worldView.x) - 1,
-			this.map.worldToTileY(camera.worldView.y) - 1,
-			this.map.worldToTileX(camera.worldView.width) + 2,
-			this.map.worldToTileX(camera.worldView.height) + 3
-		)
-
-		// set all tiles within camera view to invisible
-		for (let y = bounds.y; y < bounds.y + bounds.height; y++) {
-			for (let x = bounds.x; x < bounds.x + bounds.width; x++) {
-				if (y < 0 || y >= this.map.height || x < 0 || x >= this.map.width) {
-					continue
-				}
-
-				const tile1 = this.groundLayer.getTileAt(x, y)
-				if (!tile1) {
-					continue
-				}
-
-				tile1.alpha = 1
-				tile1.tint = this.fogColor
-
-				const tile2 = this.wallsLayer.getTileAt(x, y)
-				if (!tile2) {
-					continue
-				}
-
-				tile2.alpha = 1
-				tile2.tint = this.fogColor
-			}
-		}
-
-		// calculate fov here...
-		// get player's position
-		const px = this.map.worldToTileX(this.player.x)
-		const py = this.map.worldToTileY(this.player.y)
-
-		// compute fov from player's position
-		this.fov.compute(
-			px,
-			py,
-			7,
-			(x, y) => {
-				const tile1 = this.groundLayer!.getTileAt(x, y)
-				const tile2 = this.wallsLayer!.getTileAt(x, y)
-				if (!tile1) {
-					return false
-				}
-
-				if (!tile2) {
-					return tile1.tint === 0xffffff
-				}
-
-				return (tile1.tint === 0xffffff && tile2.tint === 0xffffff)
-			},
-			(x, y) => {
-				const d = Phaser.Math.Distance.Between(py, px, y, x)
-				const alpha = Math.min(2 - d / 6, 1)
-
-				const tile1 = this.groundLayer!.getTileAt(x, y)
-				if (!tile1) {
-					return
-				}
-
-				tile1.tint = 0xffffff
-				tile1.alpha = alpha
-
-				const tile2 = this.wallsLayer!.getTileAt(x, y)
-				if (!tile2) {
-					return
-				}
-
-				tile2.tint = 0xffffff
-				tile2.alpha = alpha
-			}
-		)
-	}
+	
 
 	private initColliders() {
 		this.physics.add.collider(this.player, this.groundLayer)
@@ -395,6 +296,6 @@ export default class MainScene extends Phaser.Scene {
 		})
 
 		// Compute FOV
-		this.computeFOV()
+		this.fov.computeFOV()
 	}
 }
