@@ -14,7 +14,7 @@ import { sceneEvents } from '../events/EventsCenter'
 import Chest from '../items/Chest'
 import { Game } from 'phaser'
 
-import { SCALE, RANDOM_DUNGEONS } from '../utils/globals'
+import { SCALE, RANDOM_DUNGEONS, DSCALE } from '../utils/globals'
 import { EasyStar } from '../libs/easystar'
 import { Mrpas } from 'mrpas'
 
@@ -133,7 +133,7 @@ export default class MainScene extends Phaser.Scene {
 		dungeon.generate();
 		dungeon.print();
 
-		const DSCALE = 3
+		//const DSCALE = 3
 
 		let [width, height] = dungeon.size
 		console.log("Dungeon width/height: "+width+"/"+height)
@@ -173,6 +173,28 @@ export default class MainScene extends Phaser.Scene {
 		return tileset
 	}
 
+	private transformGrid2TileCoordinates(grid_x: number, grid_y: number)	{
+		let [width, height] = dungeon.size
+
+		for (var y = 0; y < height; y++) {
+			
+			for (var dy = 0; dy < DSCALE; dy++) {
+				
+				for (var x = 0; x < width; x++) {
+					let wall = dungeon.walls.get([x,y])	// true, if wall
+
+					for (var dx = 0; dx < DSCALE; dx++) {
+						
+						if (x == grid_x && y == grid_y)
+							return [DSCALE*x+dx, DSCALE*y+dy]
+					}
+				}
+			}
+		}
+
+		return [0, 0]
+	}
+
 	private initPlayer() {
 		// Init knives
 		this.knives = this.physics.add.group({
@@ -183,7 +205,14 @@ export default class MainScene extends Phaser.Scene {
 		this.knife_hit_wall_sound = this.sound.add('knife-thrust-into-wall-sound', { volume: 0.2 })
 
 		// Init player
-		this.player = this.add.player(64 * SCALE, 32 * SCALE, 'player')
+		if (RANDOM_DUNGEONS) {
+			let [x,y] = this.transformGrid2TileCoordinates(dungeon.start_pos[0], dungeon.start_pos[1])
+			console.log("Player tile pos: x="+x+", y="+y)
+			this.player = this.add.player(x*8, y*8, 'player')
+		}
+		else
+			this.player = this.add.player(64 * SCALE, 32 * SCALE, 'player')
+
 		this.player.setKnives(this.knives)
 
 		this.cameras.main.startFollow(this.player, true)

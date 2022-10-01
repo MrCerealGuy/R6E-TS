@@ -45,6 +45,9 @@ https://www.mkelly.me/blog/phaser-finite-state-machine/
 FOV MRPAS algorithm
 https://blog.ourcade.co/posts/2020/phaser3-mrpas-fov-field-of-view-algorithm-roguelike-dungeon-crawler/
 
+Procedural dungeon generator (needs random-seed)
+https://github.com/domasx2/dungeon-generator
+
 ### Tile sets
 
 Scut Pixel Tileset - 8x8 Roguelike
