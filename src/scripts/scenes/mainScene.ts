@@ -78,7 +78,7 @@ export default class MainScene extends Phaser.Scene {
 		createGruntAnims(this.anims)
 		createChestAnims(this.anims)
 
-		// Init map and tileset
+		// Init static map and tileset
 		this.map = this.make.tilemap({ key: 'tileset1' })
 		var tileset = this.map.addTilesetImage('tileset1', 'tiles', 8, 8)
 
@@ -88,14 +88,7 @@ export default class MainScene extends Phaser.Scene {
 
 		// Generate random dungeon
 		if (RANDOM_DUNGEONS) {
-			this.map.destroy()
-			this.dungeon = new RandomDungeon(this)
-			this.dungeon.generateDungeon()
-
-			this.map = this.dungeon.getMap()
-			this.wallsLayer = this.dungeon.getWallsLayer()
-			this.groundLayer = this.dungeon.getGroundLayer()
-			tileset = this.dungeon.getTileset()
+			this.generateRandomDungeon(tileset)
 		}
 
 		// Init player
@@ -113,6 +106,17 @@ export default class MainScene extends Phaser.Scene {
 
 		// Init EasyStar
 		this.initEasyStar(this.map, tileset)
+	}
+
+	private generateRandomDungeon(tileset: Phaser.Tilemaps.Tileset) {
+		this.map.destroy()
+		this.dungeon = new RandomDungeon(this)
+		this.dungeon.generateDungeon()
+
+		this.map = this.dungeon.getMap()
+		this.wallsLayer = this.dungeon.getWallsLayer()
+		this.groundLayer = this.dungeon.getGroundLayer()
+		tileset = this.dungeon.getTileset()
 	}
 
 	private initPlayer() {
