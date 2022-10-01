@@ -195,6 +195,10 @@ export default class MainScene extends Phaser.Scene {
 		return [0, 0]
 	}
 
+	private transformTileCoordinates2ScreenXY(tile_x: number, tile_y: number) {
+		return [tile_x*8*SCALE,tile_y*8*SCALE]
+	}
+
 	private initPlayer() {
 		// Init knives
 		this.knives = this.physics.add.group({
@@ -206,9 +210,11 @@ export default class MainScene extends Phaser.Scene {
 
 		// Init player
 		if (RANDOM_DUNGEONS) {
-			let [x,y] = this.transformGrid2TileCoordinates(dungeon.start_pos[0], dungeon.start_pos[1])
-			console.log("Player tile pos: x="+x+", y="+y)
-			this.player = this.add.player(x*8, y*8, 'player')
+			let [tile_x,tile_y] = this.transformGrid2TileCoordinates(dungeon.start_pos[0], dungeon.start_pos[1])
+			console.log("Player tile pos: x="+tile_x+", y="+tile_y)
+			let [screen_x,screen_y] = this.transformTileCoordinates2ScreenXY(tile_x, tile_y)
+			console.log("Player screen pos: x="+screen_x+", y="+screen_y)
+			this.player = this.add.player(screen_x, screen_y, 'player')
 		}
 		else
 			this.player = this.add.player(64 * SCALE, 32 * SCALE, 'player')
