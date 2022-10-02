@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 
 import { SCALE, DSCALE } from '../utils/globals'
 import Dungeon from  '../libs/dungeon-generator/src/generators/dungeon'
+import Grunt from '../enemies/Grunt'
 
 let _dungeon = new Dungeon({
     "size": [100, 100],
@@ -32,6 +33,7 @@ export default class RandomDungeon {
 	private _wallsLayer!: Phaser.Tilemaps.TilemapLayer
     private _tileset!: Phaser.Tilemaps.Tileset
     private _scene: Phaser.Scene
+	private _grunts!: Phaser.Physics.Arcade.Group
 
     constructor(scene: Phaser.Scene) {
         this._scene = scene
@@ -52,6 +54,10 @@ export default class RandomDungeon {
     getTileset(){
         return this._tileset
     }
+
+	getGrunts(){
+		return this._grunts
+	}
 
     getStartPos(){
         return _dungeon.start_pos   // grid array coordinates
@@ -127,5 +133,29 @@ export default class RandomDungeon {
 
 	transformTileCoordinates2ScreenXY(tile_x: number, tile_y: number) {
 		return [tile_x*8*SCALE,tile_y*8*SCALE]
+	}
+
+	initGrunts() {
+		// Create group
+		this._grunts = this._scene.physics.add.group({
+			classType: Grunt,
+			createCallback: go => {
+				const gruntGo = go as Grunt
+				gruntGo.body.onCollide = true
+			}
+		})
+
+		console.log('Init grunts.')
+
+		// Add 1 test grunt
+		this._grunts.get(this.getPlayerStartPosScreenXY()[0]+64, this.getPlayerStartPosScreenXY()[1]+64, 'grunt') as Grunt
+	}
+
+	updateGrunts() {
+		this.getGrunts().children.each(child => {
+			const g = child as Grunt
+
+			g.update()
+		})
 	}
 }

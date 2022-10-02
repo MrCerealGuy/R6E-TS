@@ -25,18 +25,11 @@ export default class MainScene extends Phaser.Scene {
 	private fov!: FOV
 	private finder!: PathFinder
 
-	private map!: Phaser.Tilemaps.Tilemap
-	private tileset!: Phaser.Tilemaps.Tileset
-	private groundLayer!: Phaser.Tilemaps.TilemapLayer
-	private wallsLayer!: Phaser.Tilemaps.TilemapLayer
-	private gruntsLayer!: Phaser.Tilemaps.ObjectLayer
-
 	private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
 	private player!: Player
 	private knives!: Phaser.Physics.Arcade.Group
 	private knife_hit_wall_sound!: Phaser.Sound.BaseSound
 
-	private grunts!: Phaser.Physics.Arcade.Group
 	private playerGruntsCollider?: Phaser.Physics.Arcade.Collider
 
 	constructor() {
@@ -82,18 +75,15 @@ export default class MainScene extends Phaser.Scene {
 		// Init player
 		this.initPlayer()
 
-		// Init grunts
-		this.initGrunts(this.map)
-
 		// Init colliders
 		this.initColliders()
 
 		// Init FOV
-		this.fov = new FOV(this, this.map, this.groundLayer, this.wallsLayer, this.player)
+		this.fov = new FOV(this, this.dungeon.getMap(), this.dungeon.getGroundLayer(), this.dungeon.getWallsLayer(), this.player)
 		this.fov.initFOV()
 
 		// Init EasyStar
-		this.initPathFinder(this.map, this.tileset, this.wallsLayer)
+		this.initPathFinder(this.dungeon.getMap(), this.dungeon.getTileset(), this.dungeon.getWallsLayer())
 	}
 
 	private initPathFinder(map: Phaser.Tilemaps.Tilemap, tileset: Phaser.Tilemaps.Tileset, wallsLayer: Phaser.Tilemaps.TilemapLayer) {
@@ -105,10 +95,8 @@ export default class MainScene extends Phaser.Scene {
 		this.dungeon = new RandomDungeon(this)
 		this.dungeon.generateDungeon()
 
-		this.map = this.dungeon.getMap()
-		this.wallsLayer = this.dungeon.getWallsLayer()
-		this.groundLayer = this.dungeon.getGroundLayer()
-		this.tileset = this.dungeon.getTileset()
+		// Init grunts
+		this.dungeon.initGrunts()
 	}
 
 	private initPlayer() {
@@ -127,40 +115,20 @@ export default class MainScene extends Phaser.Scene {
 		this.cameras.main.startFollow(this.player, true)
 	}
 
-	private initGrunts(map: Phaser.Tilemaps.Tilemap) {
-		// Create group
-		this.grunts = this.physics.add.group({
-			classType: Grunt,
-			createCallback: go => {
-				const gruntGo = go as Grunt
-				gruntGo.body.onCollide = true
-			}
-		})
-
-		this.gruntsLayer = map.getObjectLayer('Grunts')
-
-		// Create grunts from layer
-		this.gruntsLayer?.objects.forEach(gruntObj => {
-			this.grunts.get(gruntObj.x! + gruntObj.width! * 0.5, gruntObj.y! - gruntObj.height! * 0.5, 'grunt')
-		})
-	}
-
 	private initColliders() {
-		this.physics.add.collider(this.player, this.groundLayer)
-		this.physics.add.collider(this.grunts, this.groundLayer)
+		this.physics.add.collider(this.player, this.dungeon.getGroundLayer())
+		this.physics.add.collider(this.dungeon.getGrunts(), this.dungeon.getGroundLayer())
 
-		this.physics.add.collider(this.player, this.wallsLayer)
-		this.physics.add.collider(this.grunts, this.wallsLayer)
+		this.physics.add.collider(this.player, this.dungeon.getWallsLayer())
+		this.physics.add.collider(this.dungeon.getGrunts(), this.dungeon.getWallsLayer())
 
-		//this.physics.add.collider(this.player, chests, this.handlePlayerChestCollision, undefined, this)
+		this.physics.add.collider(this.knives, this.dungeon.getWallsLayer(), this.handleKnifeWallCollision, undefined, this)
 
-		this.physics.add.collider(this.knives, this.wallsLayer, this.handleKnifeWallCollision, undefined, this)
-
-		this.physics.add.collider(this.knives, this.grunts, this.handleKnifeGruntCollision, undefined, this)
+		this.physics.add.collider(this.knives, this.dungeon.getGrunts(), this.handleKnifeGruntCollision, undefined, this)
 
 		this.playerGruntsCollider = this.physics.add.collider(
 			this.player,
-			this.grunts,
+			this.dungeon.getGrunts(),
 			this.handlePlayerGruntCollision,
 			undefined,
 			this
@@ -217,11 +185,7 @@ export default class MainScene extends Phaser.Scene {
 		}
 
 		// Update all grunts
-		this.grunts.children.each(child => {
-			const grunt = child as Grunt
-
-			grunt.update()
-		})
+		this.dungeon.updateGrunts()
 
 		// Compute FOV
 		this.fov.computeFOV()
