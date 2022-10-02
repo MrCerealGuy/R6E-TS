@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 
-import { SCALE, RANDOM_DUNGEONS, DSCALE } from '../utils/globals'
+import { SCALE, DSCALE } from '../utils/globals'
 import Dungeon from  '../libs/dungeon-generator/src/generators/dungeon'
 
 let _dungeon = new Dungeon({

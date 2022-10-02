@@ -14,7 +14,6 @@ import { sceneEvents } from '../events/EventsCenter'
 import Chest from '../items/Chest'
 import { Game } from 'phaser'
 
-import { SCALE, RANDOM_DUNGEONS } from '../utils/globals'
 import RandomDungeon from '../dungeon/dungeon'
 import FOV from '../dungeon/fov'
 import PathFinder from '../dungeon/pathfinder'
@@ -27,6 +26,7 @@ export default class MainScene extends Phaser.Scene {
 	private finder!: PathFinder
 
 	private map!: Phaser.Tilemaps.Tilemap
+	private tileset!: Phaser.Tilemaps.Tileset
 	private groundLayer!: Phaser.Tilemaps.TilemapLayer
 	private wallsLayer!: Phaser.Tilemaps.TilemapLayer
 	private gruntsLayer!: Phaser.Tilemaps.ObjectLayer
@@ -76,19 +76,9 @@ export default class MainScene extends Phaser.Scene {
 		createGruntAnims(this.anims)
 		createChestAnims(this.anims)
 
-		// Init static map and tileset
-		this.map = this.make.tilemap({ key: 'tileset1' })
-		var tileset = this.map.addTilesetImage('tileset1', 'tiles', 8, 8)
-
-		// Init tilemap layers
-		if (!RANDOM_DUNGEONS)
-			this.initTilemapLayers(this.map, tileset)
-
 		// Generate random dungeon
-		if (RANDOM_DUNGEONS) {
-			this.generateRandomDungeon(tileset)
-		}
-
+		this.generateRandomDungeon()
+		
 		// Init player
 		this.initPlayer()
 
@@ -103,7 +93,7 @@ export default class MainScene extends Phaser.Scene {
 		this.fov.initFOV()
 
 		// Init EasyStar
-		this.initPathFinder(this.map, tileset, this.wallsLayer)
+		this.initPathFinder(this.map, this.tileset, this.wallsLayer)
 	}
 
 	private initPathFinder(map: Phaser.Tilemaps.Tilemap, tileset: Phaser.Tilemaps.Tileset, wallsLayer: Phaser.Tilemaps.TilemapLayer) {
@@ -111,15 +101,14 @@ export default class MainScene extends Phaser.Scene {
 		this.finder.initEasyStar()
 	}
 
-	private generateRandomDungeon(tileset: Phaser.Tilemaps.Tileset) {
-		this.map.destroy()
+	private generateRandomDungeon() {
 		this.dungeon = new RandomDungeon(this)
 		this.dungeon.generateDungeon()
 
 		this.map = this.dungeon.getMap()
 		this.wallsLayer = this.dungeon.getWallsLayer()
 		this.groundLayer = this.dungeon.getGroundLayer()
-		tileset = this.dungeon.getTileset()
+		this.tileset = this.dungeon.getTileset()
 	}
 
 	private initPlayer() {
@@ -132,12 +121,7 @@ export default class MainScene extends Phaser.Scene {
 		this.knife_hit_wall_sound = this.sound.add('knife-thrust-into-wall-sound', { volume: 0.2 })
 
 		// Init player
-		if (RANDOM_DUNGEONS) {
-			this.player = this.add.player(this.dungeon.getPlayerStartPosScreenXY()[0], this.dungeon.getPlayerStartPosScreenXY()[1], 'player')
-		}
-		else
-			this.player = this.add.player(64 * SCALE, 32 * SCALE, 'player')
-
+		this.player = this.add.player(this.dungeon.getPlayerStartPosScreenXY()[0], this.dungeon.getPlayerStartPosScreenXY()[1], 'player')
 		this.player.setKnives(this.knives)
 
 		this.cameras.main.startFollow(this.player, true)
@@ -159,28 +143,6 @@ export default class MainScene extends Phaser.Scene {
 		this.gruntsLayer?.objects.forEach(gruntObj => {
 			this.grunts.get(gruntObj.x! + gruntObj.width! * 0.5, gruntObj.y! - gruntObj.height! * 0.5, 'grunt')
 		})
-	}
-
-	private initTilemapLayers(map: Phaser.Tilemaps.Tilemap, tileset: Phaser.Tilemaps.Tileset) {
-		this.groundLayer = map.createLayer('Ground', tileset)
-		this.groundLayer.setScale(SCALE)
-
-		this.groundLayer.setCollisionByProperty({ collides: true })
-
-		this.wallsLayer = map.createLayer('Walls', tileset)
-		this.wallsLayer.setScale(SCALE)
-
-		this.wallsLayer.setCollisionByProperty({ collides: true })
-
-		/*
-		const chests = this.physics.add.staticGroup({
-			classType: Chest
-		})
-
-		const chestsLayer = map.getObjectLayer('Chests')
-			chestsLayer.objects.forEach(chestObj => {
-				chests.get(chestObj.x! + chestObj.width! * 0.5, chestObj.y! - chestObj.height! * 0.5, 'treasure')
-			})*/
 	}
 
 	private initColliders() {

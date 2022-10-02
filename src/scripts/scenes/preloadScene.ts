@@ -7,7 +7,6 @@ export default class PreloadScene extends Phaser.Scene {
 
     // preload gfx
     this.load.image('tiles', 'assets/tiles/tileset01.png')
-    this.load.tilemapTiledJSON('tileset1', 'assets/tiles/map1.json')
 
     this.load.atlas('player', 'assets/character/player.png', 'assets/character/player.json')
     this.load.atlas('grunt', 'assets/enemies/grunt.png', 'assets/enemies/grunt.json')

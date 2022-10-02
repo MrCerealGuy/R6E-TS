@@ -1,3 +1,2 @@
 export const SCALE=1
-export const RANDOM_DUNGEONS=false
 export const DSCALE = 3
