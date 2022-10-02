@@ -15,31 +15,29 @@ import Chest from '../items/Chest'
 import { Game } from 'phaser'
 
 import { SCALE, RANDOM_DUNGEONS } from '../utils/globals'
-import { EasyStar } from '../libs/easystar'
 import RandomDungeon from '../dungeon/dungeon'
 import FOV from '../dungeon/fov'
+import PathFinder from '../dungeon/pathfinder'
 
 export default class MainScene extends Phaser.Scene {
 	private fpsText
 
+	private dungeon!: RandomDungeon
 	private fov!: FOV
+	private finder!: PathFinder
 
 	private map!: Phaser.Tilemaps.Tilemap
 	private groundLayer!: Phaser.Tilemaps.TilemapLayer
 	private wallsLayer!: Phaser.Tilemaps.TilemapLayer
 	private gruntsLayer!: Phaser.Tilemaps.ObjectLayer
 
-	private dungeon!: RandomDungeon
-
 	private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
 	private player!: Player
-
 	private knives!: Phaser.Physics.Arcade.Group
 	private knife_hit_wall_sound!: Phaser.Sound.BaseSound
 
 	private grunts!: Phaser.Physics.Arcade.Group
 	private playerGruntsCollider?: Phaser.Physics.Arcade.Collider
-	private finder
 
 	constructor() {
 		super({ key: 'MainScene' })
@@ -105,7 +103,12 @@ export default class MainScene extends Phaser.Scene {
 		this.fov.initFOV()
 
 		// Init EasyStar
-		this.initEasyStar(this.map, tileset)
+		this.initPathFinder(this.map, tileset, this.wallsLayer)
+	}
+
+	private initPathFinder(map: Phaser.Tilemaps.Tilemap, tileset: Phaser.Tilemaps.Tileset, wallsLayer: Phaser.Tilemaps.TilemapLayer) {
+		this.finder = new PathFinder(map, tileset, wallsLayer)
+		this.finder.initEasyStar()
 	}
 
 	private generateRandomDungeon(tileset: Phaser.Tilemaps.Tileset) {
@@ -138,44 +141,6 @@ export default class MainScene extends Phaser.Scene {
 		this.player.setKnives(this.knives)
 
 		this.cameras.main.startFollow(this.player, true)
-	}
-
-	private initEasyStar(map: Phaser.Tilemaps.Tilemap, tiles: Phaser.Tilemaps.Tileset) {
-		this.finder = new EasyStar.js()
-
-		if (!this.finder) {
-			console.log("Couldn't load EasyStar.")
-			return
-		}
-
-		var grid: number[][] = []
-
-		for (var y = 0; y < map.height; y++) {
-			var col: number[] = []
-
-			for (var x = 0; x < map.width; x++) {
-				var index = this.getTileID(x, y)
-
-				col.push(index)
-			}
-
-			grid.push(col)
-		}
-
-		console.log("Grid: " + grid)
-		this.finder.setGrid(grid)
-
-		var tileset = map.tilesets[0]
-		var properties = tileset.tileProperties
-		var acceptableTiles: number[] = [-1]
-
-		console.log("AcceptableTiles: " + acceptableTiles)
-		this.finder.setAcceptableTiles(acceptableTiles)
-	}
-
-	private getTileID(x: number, y: number) {
-		var tile = this.wallsLayer.getTileAt(x, y, true)
-		return tile?.index	// -1 = no wall tile
 	}
 
 	private initGrunts(map: Phaser.Tilemaps.Tilemap) {
@@ -217,8 +182,6 @@ export default class MainScene extends Phaser.Scene {
 				chests.get(chestObj.x! + chestObj.width! * 0.5, chestObj.y! - chestObj.height! * 0.5, 'treasure')
 			})*/
 	}
-
-	
 
 	private initColliders() {
 		this.physics.add.collider(this.player, this.groundLayer)
@@ -284,7 +247,6 @@ export default class MainScene extends Phaser.Scene {
 		//this.fpsText.update()
 
 		var pads = this.input.gamepad.gamepads
-		var map = this.map
 		var player = this.player
 
 		// Update player

@@ -158,7 +158,7 @@ class FollowPlayerState extends State {
 		console.log('going from (' + fromX + ',' + fromY + ') to (' + toX + ',' + toY + ')')
 
 		// Find path
-		scene.finder.findPath(fromX, fromY, toX, toY, function (path) {
+		scene.finder.getEasyStar().findPath(fromX, fromY, toX, toY, function (path) {
 			if (path == null) {
 				console.log("Path was not found.")
 
@@ -170,7 +170,7 @@ class FollowPlayerState extends State {
 			}
 		})
 
-		scene.finder.calculate()
+		scene.finder.getEasyStar().calculate()
 	}
 
 	enter(scene, sprite) {
