@@ -5,7 +5,7 @@ import Player from '../characters/Player'
 
 export default class FOV {
     private _fov?: Mrpas
-	private _fogColor = 0x101010
+	private _fogColor = 0x202020
 
     private _scene: Phaser.Scene
     private _map: Phaser.Tilemaps.Tilemap
@@ -23,17 +23,16 @@ export default class FOV {
 
     initFOV() {
 		this._fov = new Mrpas(this._map.width, this._map.height, (x, y) => {
-			const tile1 = this._groundLayer!.getTileAt(x, y)
-			const tile2 = this._wallsLayer!.getTileAt(x, y)
+			const tile = this._wallsLayer!.getTileAt(x, y)
 
 			// Check if there is a wall
-			if (!tile2) {
-				// No wall, only ground. Return true.
+			if (!tile) {
+				// No wall, only ground. Transparency = true.
 				return true
 			}
 
-			// A wall. True, if wall collides.
-			return tile2 && !tile2.collides
+			// A wall. Transparency = false
+			return false
 		})
 
         if (!this._fov)
@@ -51,7 +50,7 @@ export default class FOV {
 		const bounds = new Phaser.Geom.Rectangle(
 			this._map.worldToTileX(camera.worldView.x) - 1,
 			this._map.worldToTileY(camera.worldView.y) - 1,
-			this._map.worldToTileX(camera.worldView.width) + 2,
+			this._map.worldToTileX(camera.worldView.width) + 3,
 			this._map.worldToTileX(camera.worldView.height) + 3
 		)
 
@@ -63,20 +62,16 @@ export default class FOV {
 				}
 
 				const tile1 = this._groundLayer.getTileAt(x, y)
-				if (!tile1) {
-					continue
+				if (tile1) {
+					tile1.alpha = 1
+					tile1.tint = this._fogColor
 				}
-
-				tile1.alpha = 1
-				tile1.tint = this._fogColor
 
 				const tile2 = this._wallsLayer.getTileAt(x, y)
-				if (!tile2) {
-					continue
+				if (tile2) {
+					tile2.alpha = 1
+					tile2.tint = this._fogColor
 				}
-
-				tile2.alpha = 1
-				tile2.tint = this._fogColor
 			}
 		}
 
@@ -93,35 +88,33 @@ export default class FOV {
 			(x, y) => {
 				const tile1 = this._groundLayer!.getTileAt(x, y)
 				const tile2 = this._wallsLayer!.getTileAt(x, y)
+
 				if (!tile1) {
-					return false
+					if (!tile2) {
+						return false
+					}
+
+					return (tile2?.tint === 0xffffff)
 				}
 
-				if (!tile2) {
-					return tile1.tint === 0xffffff
-				}
-
-				return (tile1.tint === 0xffffff && tile2.tint === 0xffffff)
+				return (tile1?.tint === 0xffffff)
 			},
 			(x, y) => {
 				const d = Phaser.Math.Distance.Between(py, px, y, x)
 				const alpha = Math.min(2 - d / 6, 1)
 
 				const tile1 = this._groundLayer!.getTileAt(x, y)
-				if (!tile1) {
-					return
-				}
-
-				tile1.tint = 0xffffff
-				tile1.alpha = alpha
-
 				const tile2 = this._wallsLayer!.getTileAt(x, y)
-				if (!tile2) {
-					return
+				
+				if (tile1) {
+					tile1.tint = 0xffffff
+					tile1.alpha = alpha
 				}
 
-				tile2.tint = 0xffffff
-				tile2.alpha = alpha
+				if (tile2) {
+					tile2.tint = 0xffffff
+					tile2.alpha = alpha
+				}
 			}
 		)
 	}

@@ -1,4 +1,4 @@
-import Phaser from 'phaser'
+import Phaser, { Tilemaps } from 'phaser'
 
 import { SCALE, DSCALE } from '../utils/globals'
 import Dungeon from  '../libs/dungeon-generator/src/generators/dungeon'
@@ -26,6 +26,19 @@ let _dungeon = new Dungeon({
     "max_interconnect_length": 10,
     "room_count": 20
 });
+
+let _tiles = {
+	"walls": {
+		"wall_1": 1,	// standard wall
+		"wall_2": 2,	// upper wall
+		"wall_3": 13,	// lower standard wall
+		"wall_4": 12,	// lower wall with light
+	},
+
+	"floors": {
+		"floor_1": 15	// standard floor tile
+	}
+}
 
 export default class RandomDungeon {
     private _map!: Phaser.Tilemaps.Tilemap
@@ -96,17 +109,55 @@ export default class RandomDungeon {
 
 					for (var dx = 0; dx < DSCALE; dx++) {
 						if (wall) {	// wall, id = 1
-							this._wallsLayer.putTileAt(2, DSCALE*x+dx, DSCALE*y+dy, false).setCollision(true, true, true, true)
+							this._wallsLayer.putTileAt(_tiles.walls.wall_1, DSCALE*x+dx, DSCALE*y+dy, false).setCollision(true, true, true, true)
 						}
 						else {	// floor, id = 15
-							this._groundLayer.putTileAt(16, DSCALE*x+dx, DSCALE*y+dy, false)
+							this._groundLayer.putTileAt(_tiles.floors.floor_1, DSCALE*x+dx, DSCALE*y+dy, false)
 						}
 					}
 				}
 			}
 		}
 
-		return this._tileset
+		this.replaceWalls()
+	}
+
+	private replaceWalls() {
+		var width = this._map.width
+		var height = this._map.height
+
+		for (var y = 0; y < height; y++) {
+			for (var x = 0; x < width; x++) {
+				let tile = this._wallsLayer.getTileAt(x, y)
+
+				// Check if wall
+				if (tile?.index == _tiles.walls.wall_1) {
+					// Yes, check if lower tile is a floor tile
+					let tile = this._groundLayer.getTileAt(x, y+1)
+
+					if (tile?.index == _tiles.floors.floor_1) {
+						// Yes, replace wall
+						let  rnd = Phaser.Math.Between(1,100)
+
+						if (rnd < 80)
+							this._wallsLayer.putTileAt(_tiles.walls.wall_3, x, y).setCollision(true, true, true, true)
+						else
+							this._wallsLayer.putTileAt(_tiles.walls.wall_4, x, y).setCollision(true, true, true, true)
+
+						// Check for upper wall tile
+						if (y-1 >= 0) {
+							let tile = this._wallsLayer.getTileAt(x, y-1)
+
+							if (tile?.index == _tiles.walls.wall_1) {
+								this._wallsLayer.putTileAt(_tiles.walls.wall_2,x, y-1).setCollision(true, true, true, true)
+							}
+						}
+
+					}
+				}
+			}
+		}
+
 	}
 
     transformGrid2TileCoordinates(grid_x: number, grid_y: number)	{

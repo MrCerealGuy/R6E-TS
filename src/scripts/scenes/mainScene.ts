@@ -162,14 +162,11 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	update(t: number, dt: number) {
-		//this.fpsText.update()
-
 		var pads = this.input.gamepad.gamepads
-		var player = this.player
 
 		// Update player
-		if (player) {
-			player.update(t, this.cursors, pads)
+		if (this.player) {
+			this.player.update(t, this.cursors, pads)
 		}
 
 		// Update all grunts
