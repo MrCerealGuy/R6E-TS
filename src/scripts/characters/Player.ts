@@ -57,8 +57,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		this.setScale(SCALE)
 		this.setDepth(1)
 
-		//this.player.setKnives(this.knives)
-
 		scene.cameras.main.startFollow(this, true)
 
 		// Init knives

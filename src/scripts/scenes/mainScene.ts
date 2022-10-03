@@ -100,9 +100,6 @@ export default class MainScene extends Phaser.Scene {
 			console.log("Couldn't generate dungeon.")
 
 		this.dungeon.generateDungeon()
-
-		// Init grunts
-		//this.dungeon.initGrunts()
 	}
 
 	private initColliders() {
