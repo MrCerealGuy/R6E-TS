@@ -36,7 +36,8 @@ let _tiles = {
 	},
 
 	"floors": {
-		"floor_1": 15	// standard floor tile
+		"floor_1": 15,	// standard floor tile
+		"floor_random": [8,9,15,16,17,19,21,24,26]
 	}
 }
 
@@ -84,10 +85,8 @@ export default class RandomDungeon {
 
     generateDungeon() {
 		_dungeon.generate();
-		_dungeon.print();
-
+		
 		let [width, height] = _dungeon.size
-		console.log("Dungeon width/height: "+width+"/"+height)
 
 		this._map = this._scene.make.tilemap({
 			tileWidth: 8, tileHeight: 8, 
@@ -100,6 +99,7 @@ export default class RandomDungeon {
 
 		this._wallsLayer.setCollisionByProperty({ collides: true })
 
+		// Fill layers with tiles
 		for (var y = 0; y < height; y++) {
 			
 			for (var dy = 0; dy < DSCALE; dy++) {
@@ -120,6 +120,31 @@ export default class RandomDungeon {
 		}
 
 		this.replaceWalls()
+		this.replaceFloors()
+		this.placeGrunts()
+	}
+
+	private replaceFloors() {
+		var width = this._map.width
+		var height = this._map.height
+
+		for (var y = 0; y < height; y++) {
+			for (var x = 0; x < width; x++) {
+				let tile = this._groundLayer.getTileAt(x, y)
+
+				// Check if standard floor
+				if(tile?.index == _tiles.floors.floor_1) {
+					// Yes, replace with another floor
+
+					let rnd = Phaser.Math.Between(1,100)
+
+					if (rnd < 80)
+						this._groundLayer.putTileAt(_tiles.floors.floor_1,x,y)
+					else
+						this._groundLayer.putTileAt(_tiles.floors.floor_random[Phaser.Math.Between(0,_tiles.floors.floor_random.length-1)],x,y)
+				}
+			}
+		}
 	}
 
 	private replaceWalls() {
@@ -130,7 +155,7 @@ export default class RandomDungeon {
 			for (var x = 0; x < width; x++) {
 				let tile = this._wallsLayer.getTileAt(x, y)
 
-				// Check if wall
+				// Check if standard wall
 				if (tile?.index == _tiles.walls.wall_1) {
 					// Yes, check if lower tile is a floor tile
 					let tile = this._groundLayer.getTileAt(x, y+1)
@@ -186,8 +211,8 @@ export default class RandomDungeon {
 		return [tile_x*8*SCALE,tile_y*8*SCALE]
 	}
 
-	initGrunts() {
-		// Create group
+	placeGrunts() {
+		// Create group for grunts
 		this._grunts = this._scene.physics.add.group({
 			classType: Grunt,
 			createCallback: go => {
@@ -196,8 +221,26 @@ export default class RandomDungeon {
 			}
 		})
 
-		// Add 1 test grunt
-		this._grunts.get(this.getPlayerStartPosScreenXY()[0]+64, this.getPlayerStartPosScreenXY()[1]+64, 'grunt') as Grunt
+		// Place grunts
+		var width = this._map.width
+		var height = this._map.height
+
+		for (var y = 0; y < height; y++) {
+			for (var x = 0; x < width; x++) {
+				let tile = this._groundLayer.getTileAt(x, y)
+
+				// Check if ground
+				if (tile) {
+					// Yes, place grunt
+					let rnd = Phaser.Math.Between(1,500)
+
+					if (rnd < 5) {
+						let pos = this.transformTileCoordinates2ScreenXY(x,y)
+						this._grunts.get(pos[0], pos[1], 'grunt') as Grunt
+					}
+				}
+			}
+		}
 	}
 
 	updateGrunts() {

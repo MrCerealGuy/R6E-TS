@@ -102,7 +102,7 @@ export default class MainScene extends Phaser.Scene {
 		this.dungeon.generateDungeon()
 
 		// Init grunts
-		this.dungeon.initGrunts()
+		//this.dungeon.initGrunts()
 	}
 
 	private initColliders() {

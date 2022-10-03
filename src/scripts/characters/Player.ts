@@ -120,10 +120,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 	handleKnifeHitWall(obj1: Phaser.GameObjects.GameObject) {
 		this.knife_hit_wall_sound.play()
+		obj1.destroy()
 		this.knives.killAndHide(obj1)
 	}
 
 	handleKnifeHitGrunt(obj1: Phaser.GameObjects.GameObject) {
+		obj1.destroy()
 		this.knives.killAndHide(obj1)
 	}
 

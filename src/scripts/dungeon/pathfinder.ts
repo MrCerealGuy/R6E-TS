@@ -35,7 +35,6 @@ export default class PathFinder {
 			grid.push(col)
 		}
 
-		console.log("Grid: " + grid)
 		this._finder.setGrid(grid)
 
 		var tileset = this._map.tilesets[0]
