@@ -38,8 +38,6 @@ export default class FOV {
 
         if (!this._fov)
             console.log("initFOV() failed.")
-        else
-            console.log("initFOV()..ok")
 	}
 
 	computeFOV() {

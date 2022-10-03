@@ -26,14 +26,47 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	private _health = 3
 	private _coins = 0
 
-	private knives?: Phaser.Physics.Arcade.Group
+	private knives!: Phaser.Physics.Arcade.Group
 	private activeChest?: Chest
 
 	private death_sound!: Phaser.Sound.BaseSound
 	private hurt_sound!: Phaser.Sound.BaseSound
 	private knife_throw_sound!: Phaser.Sound.BaseSound
+	private knife_hit_wall_sound!: Phaser.Sound.BaseSound
+
+	private _scene!: Phaser.Scene
 
 	private lastFired = 0
+
+	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
+		super(scene, x * SCALE, y * SCALE, texture, frame)
+
+		this._scene = scene
+
+		this.knife_hit_wall_sound = scene.sound.add('knife-thrust-into-wall-sound', { volume: 0.2 })
+
+		if (!this.knife_hit_wall_sound)
+			console.log("Couldn't load knife_hit_wall_sound")
+
+		this.death_sound = scene.sound.add('player-death-sound', { volume: 0.2 })
+		this.hurt_sound = scene.sound.add('player-hurt-sound', { volume: 0.2 })
+		this.knife_throw_sound = scene.sound.add('knife-throw-sound', { volume: 0.2 })
+
+		this.anims.play('player-idle-down')
+
+		this.setScale(SCALE)
+		this.setDepth(1)
+
+		//this.player.setKnives(this.knives)
+
+		scene.cameras.main.startFollow(this, true)
+
+		// Init knives
+		this.knives = this._scene.physics.add.group({
+			classType: Phaser.Physics.Arcade.Image,
+			maxSize: 3
+		})
+	}
 
 	get health() {
 		return this._health
@@ -46,21 +79,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			return false
 	}
 
-	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
-		super(scene, x * SCALE, y * SCALE, texture, frame)
-
-		this.anims.play('player-idle-down')
-
-		this.setScale(SCALE)
-		this.setDepth(1)
-
-		this.death_sound = scene.sound.add('player-death-sound', { volume: 0.2 })
-		this.hurt_sound = scene.sound.add('player-hurt-sound', { volume: 0.2 })
-		this.knife_throw_sound = scene.sound.add('knife-throw-sound', { volume: 0.2 })
-	}
-
-	setKnives(knives: Phaser.Physics.Arcade.Group) {
-		this.knives = knives
+	getKnives() {
+		return this.knives
 	}
 
 	setChest(chest: Chest) {
@@ -96,6 +116,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 			this.hurt_sound.play()
 		}
+	}
+
+	handleKnifeHitWall(obj1: Phaser.GameObjects.GameObject) {
+		this.knife_hit_wall_sound.play()
+		this.knives.killAndHide(obj1)
+	}
+
+	handleKnifeHitGrunt(obj1: Phaser.GameObjects.GameObject) {
+		this.knives.killAndHide(obj1)
 	}
 
 	private throwKnife() {

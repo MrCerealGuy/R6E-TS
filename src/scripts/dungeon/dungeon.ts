@@ -145,8 +145,6 @@ export default class RandomDungeon {
 			}
 		})
 
-		console.log('Init grunts.')
-
 		// Add 1 test grunt
 		this._grunts.get(this.getPlayerStartPosScreenXY()[0]+64, this.getPlayerStartPosScreenXY()[1]+64, 'grunt') as Grunt
 	}
