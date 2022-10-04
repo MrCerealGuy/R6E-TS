@@ -244,7 +244,7 @@ export default class RandomDungeon {
 
 					if (rnd < 5) {
 						let pos = this.transformTileCoordinates2ScreenXY(x,y)
-						this._grunts.get(pos[0], pos[1], 'grunt') as Grunt
+						this._grunts.get(pos[0]+4, pos[1]+4, 'grunt_texture_atlas') as Grunt
 					}
 				}
 			}
@@ -271,13 +271,11 @@ export default class RandomDungeon {
 
 					if (rnd < 5) {
 						let pos = this.transformTileCoordinates2ScreenXY(x,y)
-						this._medikits.get(pos[0], pos[1], 'items_texture_atlas') as Medikit
+						this._medikits.get(pos[0]+4, pos[1]+4, 'items_texture_atlas') as Medikit
 					}
 				}
 			}
 		}
-
-
 	}
 
 	updateGrunts() {
