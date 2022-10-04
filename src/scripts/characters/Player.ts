@@ -127,6 +127,14 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		this.knives.killAndHide(obj1)
 	}
 
+	collectMedikit(obj1: Phaser.GameObjects.GameObject) {
+		if (this._health < 3) {
+			obj1.destroy()
+			++this._health
+			sceneEvents.emit('player-health-changed', this._health)
+		}
+	}
+
 	private throwKnife() {
 		if (!this.knives) {
 			return

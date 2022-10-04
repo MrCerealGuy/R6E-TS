@@ -2,9 +2,10 @@ import FpsText from '../objects/fpsText'
 
 import { createGruntAnims } from '../anims/EnemyAnims'
 import { createCharacterAnims } from '../anims/CharacterAnims'
-import { createChestAnims } from '../anims/TreasureAnims'
+import { createItemAnims } from '../anims/ItemAnims'
 
 import Grunt from '../enemies/Grunt'
+import Medikit from '../items/Medikit'
 
 import '../characters/Player'
 import Player from '../characters/Player'
@@ -56,7 +57,7 @@ export default class MainScene extends Phaser.Scene {
 		// Init anims
 		createCharacterAnims(this.anims)
 		createGruntAnims(this.anims)
-		createChestAnims(this.anims)
+		createItemAnims(this.anims)
 
 		// Generate random dungeon
 		this.generateRandomDungeon()
@@ -118,6 +119,8 @@ export default class MainScene extends Phaser.Scene {
 
 		this.physics.add.collider(this.player.getKnives(), this.dungeon.getGrunts(), this.handleKnifeGruntCollision, undefined, this)
 
+		this.physics.add.collider(this.player, this.dungeon.getMedikits(), this.handlePlayerMedikitCollision, undefined, this)
+
 		this.playerGruntsCollider = this.physics.add.collider(
 			this.player,
 			this.dungeon.getGrunts(),
@@ -137,6 +140,11 @@ export default class MainScene extends Phaser.Scene {
 		if (!grunt.isDead()) grunt.handleDeath()
 
 		this.player.handleKnifeHitGrunt(obj1)
+	}
+
+	private handlePlayerMedikitCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
+		const medi = obj2 as Medikit
+		this.player.collectMedikit(medi)
 	}
 
 	private handlePlayerGruntCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {

@@ -107,7 +107,7 @@ class PlayerDetectedState extends State {
 		sprite.detectionArea.setVisible(true)
 		sprite.anims.play('grunt-idle')
 
-		if (!sprite.detected_sound.isPlaying)
+		if (!sprite.detected_sound.isPlaying && (Phaser.Math.Between(1,100) <= 50))
 			sprite.detected_sound.play()
 
 		sprite.setVelocity(0, 0)

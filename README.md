@@ -53,6 +53,9 @@ https://github.com/domasx2/dungeon-generator
 Scut Pixel Tileset - 8x8 Roguelike
 https://scut.itch.io/7drl-tileset-2018
 
+Oryx Design Lab 16-BIT SCI-FI
+https://www.oryxdesignlab.com/products/16-bit-sci-fi-tileset
+
 ### Sfx effects
 
 https://pixabay.com/sound-effects/

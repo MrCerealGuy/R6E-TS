@@ -3,6 +3,7 @@ import Phaser, { Tilemaps } from 'phaser'
 import { SCALE, DSCALE } from '../utils/globals'
 import Dungeon from  '../libs/dungeon-generator/src/generators/dungeon'
 import Grunt from '../enemies/Grunt'
+import Medikit from '../items/Medikit'
 
 let _dungeon = new Dungeon({
     "size": [100, 100],
@@ -49,6 +50,8 @@ export default class RandomDungeon {
     private _scene: Phaser.Scene
 	private _grunts!: Phaser.Physics.Arcade.Group
 
+	private _medikits!: Phaser.Physics.Arcade.StaticGroup
+
     constructor(scene: Phaser.Scene) {
         this._scene = scene
     }
@@ -71,6 +74,10 @@ export default class RandomDungeon {
 
 	getGrunts(){
 		return this._grunts
+	}
+
+	getMedikits(){
+		return this._medikits
 	}
 
     getStartPos(){
@@ -122,6 +129,7 @@ export default class RandomDungeon {
 		this.replaceWalls()
 		this.replaceFloors()
 		this.placeGrunts()
+		this.placeItems()
 	}
 
 	private replaceFloors() {
@@ -241,6 +249,35 @@ export default class RandomDungeon {
 				}
 			}
 		}
+	}
+
+	placeItems() {
+		// Place medikits
+		this._medikits = this._scene.physics.add.staticGroup({
+			classType: Medikit
+		})
+
+		var width = this._map.width
+		var height = this._map.height
+
+		for (var y = 0; y < height; y++) {
+			for (var x = 0; x < width; x++) {
+				let tile = this._groundLayer.getTileAt(x, y)
+
+				// Check if ground
+				if (tile) {
+					// Yes, place medikit
+					let rnd = Phaser.Math.Between(1,500)
+
+					if (rnd < 5) {
+						let pos = this.transformTileCoordinates2ScreenXY(x,y)
+						this._medikits.get(pos[0], pos[1], 'items_texture_atlas') as Medikit
+					}
+				}
+			}
+		}
+
+
 	}
 
 	updateGrunts() {

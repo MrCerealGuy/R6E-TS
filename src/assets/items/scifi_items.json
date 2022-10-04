@@ -1,0 +1,35 @@
+{
+  "frames": {
+    "medikit_red.png": {
+      "frame": {
+        "x": 64,
+        "y": 32,
+        "w": 8,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "sourceSize": {
+        "w": 8,
+        "h": 8
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.5",
+    "image": "scifi_items.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 176,
+      "h": 72
+    },
+    "scale": 1
+  }
+}
