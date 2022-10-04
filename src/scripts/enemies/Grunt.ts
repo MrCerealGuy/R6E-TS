@@ -226,13 +226,13 @@ class FollowPlayerState extends State {
 			},
 			loop: false
 		})
-
 	}
 }
 
 export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 	private direction = Direction.RIGHT
 	private moveEvent: Phaser.Time.TimerEvent
+	private attackEvent: Phaser.Time.TimerEvent
 
 	private death_sound!: Phaser.Sound.BaseSound
 	private hurt_sound!: Phaser.Sound.BaseSound
@@ -249,6 +249,8 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 	constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
 		super(scene, x * SCALE, y * SCALE, texture, frame)
+
+		//this._scene = scene
 
 		scene.physics.world.on(Phaser.Physics.Arcade.Events.TILE_COLLIDE, this.handleTileCollision, this)
 
@@ -296,6 +298,30 @@ export default class Grunt extends Phaser.Physics.Arcade.Sprite {
 
 	getDetectionArea() {
 		return this.detectionArea
+	}
+
+	handleAttackPlayer(player: Player) {
+		if (this.attackEvent?.getRemainingSeconds() > 0 || this.isDead() || player.isDead())
+			return false
+
+		// Grunt has to rest after last attack
+		this.attackEvent = this.scene.time.addEvent({
+			delay: 500,
+			callback: () => {
+				this.attackEvent.destroy()
+			},
+			loop: false
+		})
+
+		const dx = player.x - this.x
+		const dy = player.y - this.y
+
+		const dir = new Phaser.Math.Vector2(dx, dy).normalize().scale(200)
+
+		// Do damage to player
+		player.handleDamage(dir)
+
+		return true
 	}
 
 	handleDamage() {

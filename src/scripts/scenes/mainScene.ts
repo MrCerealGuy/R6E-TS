@@ -150,19 +150,12 @@ export default class MainScene extends Phaser.Scene {
 	private handlePlayerGruntCollision(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject) {
 		const grunt = obj2 as Grunt
 
-		if (grunt.isDead() || this.player.isDead()) return
+		if (grunt.handleAttackPlayer(this.player)) {
+			sceneEvents.emit('player-health-changed', this.player.health)
 
-		const dx = this.player.x - grunt.x
-		const dy = this.player.y - grunt.y
-
-		const dir = new Phaser.Math.Vector2(dx, dy).normalize().scale(200)
-
-		this.player.handleDamage(dir)
-
-		sceneEvents.emit('player-health-changed', this.player.health)
-
-		if (this.player.health <= 0) {
-			this.playerGruntsCollider?.destroy()
+			if (this.player.isDead()) {
+				this.playerGruntsCollider?.destroy()
+			}
 		}
 	}
 

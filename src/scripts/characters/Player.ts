@@ -71,7 +71,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	isDead() {
-		if (this._health == 0)
+		if (this._health <= 0)
 			return true
 		else
 			return false
