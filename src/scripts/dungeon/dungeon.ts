@@ -30,10 +30,14 @@ let _dungeon = new Dungeon({
 
 let _tiles = {
 	"walls": {
+		"wall_0": 0,	// void
 		"wall_1": 1,	// standard wall
 		"wall_2": 2,	// upper wall
 		"wall_3": 13,	// lower standard wall
 		"wall_4": 12,	// lower wall with light
+		"lower_wall_1": 13,
+		"lower_wall_2": 5,
+		"lower_wall_3": 46
 	},
 
 	"floors": {
@@ -126,7 +130,10 @@ export default class RandomDungeon {
 			}
 		}
 
-		this.replaceWalls()
+		this.replaceStandardWallsWithVoid()
+		this.replaceUpperStandardWalls()
+		this.replaceLowerStandardWalls()
+
 		this.replaceFloors()
 		this.placeGrunts()
 		this.placeItems()
@@ -155,7 +162,48 @@ export default class RandomDungeon {
 		}
 	}
 
-	private replaceWalls() {
+	private replaceStandardWallsWithVoid() {
+		var width = this._map.width
+		var height = this._map.height
+
+		for (var y = 0; y < height; y++) {
+			for (var x = 0; x < width; x++) {
+				let tile = this._wallsLayer.getTileAt(x, y)
+
+				// Check if standard wall
+				if (tile?.index == _tiles.walls.wall_1) {
+					let tile_l = this._wallsLayer.getTileAt(x-1, y)
+					let tile_lu = this._wallsLayer.getTileAt(x-1, y-1)
+					let tile_r = this._wallsLayer.getTileAt(x+1, y)
+					let tile_ru = this._wallsLayer.getTileAt(x+1, y-1)
+					let tile_u = this._wallsLayer.getTileAt(x, y-1)
+					let tile_dl1 = this._wallsLayer.getTileAt(x-1, y+1)
+					let tile_dr1 = this._wallsLayer.getTileAt(x+1, y+1)
+					let tile_dl2 = this._wallsLayer.getTileAt(x-1, y+2)
+					let tile_dr2 = this._wallsLayer.getTileAt(x+1, y+2)
+					let tile_d1 = this._wallsLayer.getTileAt(x, y+1)
+					let tile_d2 = this._wallsLayer.getTileAt(x, y+2)
+
+					/*
+									W W W
+									W X W
+									W W W
+									W W W
+
+									W = wall
+									X = current wall tile
+					*/
+
+					// Check tiles for walls next of this tile
+					if (tile_l && tile_lu && tile_r && tile_ru && tile_u && tile_dl1 && tile_dr1 && tile_dl2 && tile_dr2 && tile_d1 && tile_d2) {
+						this._wallsLayer.putTileAt(_tiles.walls.wall_0, x, y).setCollision(true, true, true, true)
+					}
+				}
+			}
+		}
+	}
+
+	private replaceUpperStandardWalls() {
 		var width = this._map.width
 		var height = this._map.height
 
@@ -191,6 +239,39 @@ export default class RandomDungeon {
 			}
 		}
 
+	}
+
+	private replaceLowerStandardWalls() {
+		var width = this._map.width
+		var height = this._map.height
+
+		for (var y = 0; y < height; y++) {
+			for (var x = 0; x < width; x++) {
+				let tile = this._wallsLayer.getTileAt(x, y)
+				
+				// Check for void wall
+				if (tile?.index == _tiles.walls.wall_0) {
+					// Yes, check for standard wall upper this tile
+					let tile_u = this._wallsLayer.getTileAt(x, y-1)
+
+					if (tile_u?.index == _tiles.walls.wall_1) {
+						let rnd = Phaser.Math.Between(1,100)
+
+						if (rnd < 80)
+							this._wallsLayer.putTileAt(_tiles.walls.lower_wall_1,x,y)
+						else
+							this._wallsLayer.putTileAt(_tiles.walls.lower_wall_2,x,y)
+
+						// Check for void wall lower this tile
+						let tile_d = this._wallsLayer.getTileAt(x, y+1)
+
+						if (tile_d?.index == _tiles.walls.wall_0) {
+							this._wallsLayer.putTileAt(_tiles.walls.lower_wall_3,x,y+1)
+						}
+					}
+				}
+			}
+		}
 	}
 
     transformGrid2TileCoordinates(grid_x: number, grid_y: number)	{

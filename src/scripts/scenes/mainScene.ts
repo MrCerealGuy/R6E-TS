@@ -69,8 +69,8 @@ export default class MainScene extends Phaser.Scene {
 		this.initColliders()
 
 		// Init FOV
-		this.fov = new FOV(this, this.dungeon.getMap(), this.dungeon.getGroundLayer(), this.dungeon.getWallsLayer(), this.player)
-		this.fov.initFOV()
+		//this.fov = new FOV(this, this.dungeon.getMap(), this.dungeon.getGroundLayer(), this.dungeon.getWallsLayer(), this.player)
+		//this.fov.initFOV()
 
 		// Init EasyStar
 		this.initPathFinder(this.dungeon.getMap(), this.dungeon.getTileset(), this.dungeon.getWallsLayer())
@@ -171,6 +171,7 @@ export default class MainScene extends Phaser.Scene {
 		this.dungeon.updateGrunts()
 
 		// Compute FOV
-		this.fov.computeFOV()
+		if (this.fov)
+			this.fov.computeFOV()
 	}
 }
