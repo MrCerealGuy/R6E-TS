@@ -1,5 +1,12 @@
 # R6E-TS
 
+A minimalistic roguelike dungeon crawler by Andreas Zahnleiter. This project is in development.
+
+Early gameplay preview video:
+
+[![Watch the video](http://i3.ytimg.com/vi/UdKSiLR-mZ4/hqdefault.jpg)](https://youtu.be/UdKSiLR-mZ4)
+
+
 ## How To Use
 
 To clone and run this repository, you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download/) (which comes with [npm](http://npmjs.com)) installed on your computer. From your command line:
